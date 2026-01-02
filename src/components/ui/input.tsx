@@ -14,7 +14,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="block text-sm font-bold text-pastel-blue-border mb-2 tracking-tightest">
+          <label htmlFor={inputId} className="block text-xs sm:text-sm font-bold text-pastel-blue-border mb-1.5 sm:mb-2 tracking-tightest">
             {label}
           </label>
         )}
@@ -23,8 +23,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           type={type}
           id={inputId}
           className={`
-            w-full h-12 px-4 rounded-xl border-2 text-pastel-blue-text text-sm tracking-tightest font-medium
-            placeholder:text-pastel-blue-border/50
+            w-full h-10 sm:h-12 px-3 sm:px-4 rounded-lg sm:rounded-xl border-2 text-pastel-blue-text text-sm tracking-tightest font-medium
+            placeholder:text-pastel-blue-border/50 touch-manipulation
             bg-pastel-cream/80 backdrop-blur-sm transition-all duration-200
             focus:outline-none focus:ring-2 focus:ring-pastel-blue-border/50 focus:border-pastel-blue-border focus:bg-pastel-cream
             disabled:bg-pastel-blue/30 disabled:cursor-not-allowed
@@ -33,7 +33,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           `}
           {...props}
         />
-        {error && <p className="mt-2 text-xs font-bold text-pastel-blue-text tracking-tightest">{error}</p>}
+        {error && <p className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs font-bold text-pastel-blue-text tracking-tightest">{error}</p>}
       </div>
     );
   }

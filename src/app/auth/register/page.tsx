@@ -83,7 +83,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-pastel-cream flex">
       {/* Left - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary-600 p-12 flex-col justify-between">
+      <div className="hidden lg:flex lg:w-1/2 bg-pastel-blue-border p-8 xl:p-12 flex-col justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,8 +94,8 @@ export default function RegisterPage() {
         </Link>
 
         <div>
-          <h1 className="text-4xl font-bold text-white mb-4">Start your learning journey</h1>
-          <p className="text-primary-100 text-lg">
+          <h1 className="text-3xl xl:text-4xl font-bold text-white mb-4">Start your learning journey</h1>
+          <p className="text-pastel-blue/90 text-base xl:text-lg">
             Join hundreds of students mastering Maths and English with expert tutors.
           </p>
         </div>
@@ -129,31 +129,31 @@ export default function RegisterPage() {
       </div>
 
       {/* Right - Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 py-6 sm:py-8">
         <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="lg:hidden flex items-center justify-center gap-2 mb-5 sm:mb-8">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-pastel-blue-border rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <span className="text-2xl font-bold text-slate-900">BrainBooster</span>
+            <span className="text-xl sm:text-2xl font-bold text-slate-900">BrainBooster</span>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Create your account</h2>
-              <p className="text-slate-500">Start your 30-day free trial</p>
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 md:p-8">
+            <div className="text-center mb-4 sm:mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1 sm:mb-2">Create your account</h2>
+              <p className="text-slate-500 text-sm">Start your 30-day free trial</p>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
-                <p className="text-sm text-red-600 text-center">{error}</p>
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-red-50 border border-red-200">
+                <p className="text-xs sm:text-sm text-red-600 text-center">{error}</p>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                 <Input
                   label="First name"
                   value={form.firstName}
@@ -196,11 +196,11 @@ export default function RegisterPage() {
               />
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Year Group</label>
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1 sm:mb-1.5">Year Group</label>
                 <select
                   value={form.yearGroup}
                   onChange={(e) => setForm({ ...form, yearGroup: e.target.value })}
-                  className="w-full h-11 px-4 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-pastel-blue-border touch-manipulation"
                 >
                   <option value="KS3">KS3</option>
                   <option value="KS4">KS4</option>
@@ -210,18 +210,18 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Subjects</label>
-                <div className="flex gap-4">
+                <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1 sm:mb-1.5">Subjects</label>
+                <div className="flex gap-4 sm:gap-6">
                   {["MATHS", "ENGLISH"].map((subject) => (
-                    <label key={subject} className="flex items-center gap-2 cursor-pointer">
+                    <label key={subject} className="flex items-center gap-2 cursor-pointer touch-manipulation">
                       <input
                         type="checkbox"
                         checked={form.subjects.includes(subject)}
                         onChange={() => toggleSubject(subject)}
-                        className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                        className="rounded border-slate-300 text-pastel-blue-border focus:ring-pastel-blue-border w-4 h-4"
                       />
-                      <span className="text-sm text-slate-700">
-                        {subject === "MATHS" ? "Mathematics" : "English"}
+                      <span className="text-xs sm:text-sm text-slate-700">
+                        {subject === "MATHS" ? "Maths" : "English"}
                       </span>
                     </label>
                   ))}
@@ -233,17 +233,17 @@ export default function RegisterPage() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-slate-500 text-sm">
+            <div className="mt-4 sm:mt-6 text-center">
+              <p className="text-slate-500 text-xs sm:text-sm">
                 Already have an account?{" "}
-                <Link href="/auth/login" className="text-primary-600 font-medium hover:underline">
+                <Link href="/auth/login" className="text-pastel-blue-border font-medium hover:underline">
                   Sign in
                 </Link>
               </p>
             </div>
           </div>
 
-          <p className="mt-6 text-center text-xs text-slate-400">
+          <p className="mt-4 sm:mt-6 text-center text-[10px] sm:text-xs text-slate-400 px-4">
             By creating an account, you agree to our Terms and Privacy Policy
           </p>
         </div>

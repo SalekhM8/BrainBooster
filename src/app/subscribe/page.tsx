@@ -140,50 +140,50 @@ function SubscribeForm() {
     <div className="min-h-screen bg-pastel-blue">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-lg border-b-2 border-pastel-blue-border/20">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <Link href="/pricing" className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back to Plans</span>
+            <span className="text-xs sm:text-sm font-medium">Back to Plans</span>
           </Link>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        <div className="grid lg:grid-cols-2 gap-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+        <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
           {/* Order Summary */}
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2 tracking-tight">
+          <div className="order-2 lg:order-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-1 sm:mb-2 tracking-tight">
               Complete Your Order
             </h1>
-            <p className="text-slate-500 mb-8">
+            <p className="text-slate-500 mb-4 sm:mb-8 text-sm sm:text-base">
               You&apos;re subscribing to {plan.name}
             </p>
 
-            <Card variant="bordered" className="p-6 bg-white">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-bold text-slate-900">{plan.name}</h3>
-                  <p className="text-sm text-slate-500">{plan.description}</p>
+            <Card variant="bordered" className="p-4 sm:p-6 bg-white">
+              <div className="flex items-start sm:items-center justify-between mb-3 sm:mb-4 gap-2">
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-bold text-slate-900 text-sm sm:text-base">{plan.name}</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 truncate">{plan.description}</p>
                 </div>
                 {plan.tier === "PREMIUM" && (
-                  <Badge variant="warning">Premium</Badge>
+                  <Badge variant="warning" className="text-xs shrink-0">Premium</Badge>
                 )}
               </div>
 
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
                 {subjects.map((subject) => (
-                  <Badge key={subject} variant={subject === "MATHS" ? "primary" : "warning"}>
-                    {subject === "MATHS" ? "Mathematics" : "English"}
+                  <Badge key={subject} variant={subject === "MATHS" ? "primary" : "warning"} className="text-xs">
+                    {subject === "MATHS" ? "Maths" : "English"}
                   </Badge>
                 ))}
               </div>
 
               {/* Billing Toggle */}
-              <div className="flex gap-2 p-1 bg-slate-100 rounded-lg mb-6">
+              <div className="flex gap-1.5 sm:gap-2 p-1 bg-slate-100 rounded-lg mb-4 sm:mb-6">
                 <button
                   type="button"
                   onClick={() => setBillingInterval("monthly")}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                  className={`flex-1 py-2 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all ${
                     billingInterval === "monthly"
                       ? "bg-white text-slate-900 shadow-sm"
                       : "text-slate-600"
@@ -194,34 +194,34 @@ function SubscribeForm() {
                 <button
                   type="button"
                   onClick={() => setBillingInterval("yearly")}
-                  className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+                  className={`flex-1 py-2 px-2 sm:px-4 rounded-md text-xs sm:text-sm font-medium transition-all ${
                     billingInterval === "yearly"
                       ? "bg-white text-slate-900 shadow-sm"
                       : "text-slate-600"
                   }`}
                 >
-                  Yearly (Save 17%)
+                  Yearly <span className="hidden sm:inline">(Save 17%)</span>
                 </button>
               </div>
 
-              <ul className="space-y-2 mb-6">
+              <ul className="space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
                 {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" />
-                    {feature}
+                  <li key={feature} className="flex items-start gap-2 text-xs sm:text-sm text-slate-600">
+                    <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500 mt-0.5 shrink-0" />
+                    <span>{feature}</span>
                   </li>
                 ))}
               </ul>
 
-              <div className="border-t border-slate-200 pt-4">
+              <div className="border-t border-slate-200 pt-3 sm:pt-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-slate-700">Total</span>
+                  <span className="font-medium text-slate-700 text-sm sm:text-base">Total</span>
                   <div className="text-right">
-                    <span className="text-2xl font-bold text-slate-900">
+                    <span className="text-xl sm:text-2xl font-bold text-slate-900">
                       £{getPrice()}
                     </span>
-                    <span className="text-slate-500">
-                      /{billingInterval === "yearly" ? "year" : "month"}
+                    <span className="text-slate-500 text-sm">
+                      /{billingInterval === "yearly" ? "yr" : "mo"}
                     </span>
                   </div>
                 </div>
@@ -230,21 +230,21 @@ function SubscribeForm() {
           </div>
 
           {/* Checkout Form */}
-          <div>
-            <Card variant="bordered" className="p-6 bg-white">
-              <div className="flex items-center gap-2 mb-6">
-                <CreditCard className="w-5 h-5 text-pastel-blue-border" />
-                <h2 className="text-lg font-bold text-slate-900">Your Details</h2>
+          <div className="order-1 lg:order-2">
+            <Card variant="bordered" className="p-4 sm:p-6 bg-white">
+              <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                <CreditCard className="w-4 h-4 sm:w-5 sm:h-5 text-pastel-blue-border" />
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">Your Details</h2>
               </div>
 
               {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="mb-4 p-2.5 sm:p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-xs sm:text-sm">
                   {error}
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
                   <Input
                     label="First Name"
                     value={form.firstName}
@@ -285,13 +285,13 @@ function SubscribeForm() {
                 />
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1">
                     Year Group
                   </label>
                   <select
                     value={form.yearGroup}
                     onChange={(e) => setForm({ ...form, yearGroup: e.target.value })}
-                    className="w-full rounded-lg border-2 border-pastel-blue-border bg-pastel-cream/50 px-4 py-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-pastel-blue-border"
+                    className="w-full rounded-lg border-2 border-pastel-blue-border bg-pastel-cream/50 px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-900 focus:outline-none focus:ring-2 focus:ring-pastel-blue-border"
                   >
                     <option value="KS3">KS3</option>
                     <option value="KS4">KS4</option>
@@ -302,23 +302,24 @@ function SubscribeForm() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12"
+                  className="w-full"
+                  size="lg"
                   disabled={isLoading}
                 >
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Redirecting to payment...
+                      <span className="text-sm">Redirecting...</span>
                     </>
                   ) : (
                     <>
                       <CreditCard className="w-4 h-4 mr-2" />
-                      Continue to Payment
+                      <span className="text-sm">Continue to Payment</span>
                     </>
                   )}
                 </Button>
 
-                <p className="text-xs text-center text-slate-400">
+                <p className="text-[10px] sm:text-xs text-center text-slate-400">
                   Secure payment powered by Stripe. Cancel anytime.
                 </p>
               </form>

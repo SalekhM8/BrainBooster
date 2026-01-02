@@ -49,7 +49,7 @@ function LoginForm() {
   return (
     <div className="min-h-screen bg-pastel-cream flex">
       {/* Left - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary-600 p-12 flex-col justify-between">
+      <div className="hidden lg:flex lg:w-1/2 bg-pastel-blue-border p-8 xl:p-12 flex-col justify-between">
         <Link href="/" className="flex items-center gap-2">
           <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,10 +60,10 @@ function LoginForm() {
         </Link>
 
         <div>
-          <h1 className="text-4xl font-bold text-white mb-4">
+          <h1 className="text-3xl xl:text-4xl font-bold text-white mb-4">
             Welcome back!
           </h1>
-          <p className="text-primary-100 text-lg">
+          <p className="text-pastel-blue/90 text-base xl:text-lg">
             Sign in to access your classes, recordings, and continue your learning journey.
           </p>
         </div>
@@ -71,41 +71,41 @@ function LoginForm() {
         <div className="flex items-center gap-4">
           <div className="flex -space-x-2">
             {["S", "J", "E", "M"].map((initial, i) => (
-              <div key={i} className="w-10 h-10 rounded-full bg-white/20 border-2 border-primary-600 flex items-center justify-center text-white font-semibold text-sm">
+              <div key={i} className="w-10 h-10 rounded-full bg-white/20 border-2 border-pastel-blue-border flex items-center justify-center text-white font-semibold text-sm">
                 {initial}
               </div>
             ))}
           </div>
-          <p className="text-primary-100 text-sm">500+ students learning with us</p>
+          <p className="text-pastel-blue/80 text-sm">500+ students learning with us</p>
         </div>
       </div>
 
       {/* Right - Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-md">
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-10">
-            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="lg:hidden flex items-center justify-center gap-2 mb-6 sm:mb-10">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-pastel-blue-border rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <span className="text-2xl font-bold text-slate-900">BrainBooster</span>
+            <span className="text-xl sm:text-2xl font-bold text-slate-900">BrainBooster</span>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">Sign in</h2>
-              <p className="text-slate-500">Enter your credentials to continue</p>
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 md:p-8">
+            <div className="text-center mb-5 sm:mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-1 sm:mb-2">Sign in</h2>
+              <p className="text-slate-500 text-sm">Enter your credentials to continue</p>
             </div>
 
             {error && (
-              <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
-                <p className="text-sm text-red-600 text-center">{error}</p>
+              <div className="mb-4 sm:mb-6 p-3 sm:p-4 rounded-lg bg-red-50 border border-red-200">
+                <p className="text-xs sm:text-sm text-red-600 text-center">{error}</p>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               <Input
                 ref={emailRef}
                 label="Email"
@@ -125,7 +125,7 @@ function LoginForm() {
                   required
                 />
                 <div className="mt-1.5 text-right">
-                  <Link href="/auth/forgot-password" className="text-sm text-primary-600 hover:underline">
+                  <Link href="/auth/forgot-password" className="text-xs sm:text-sm text-pastel-blue-border hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -136,17 +136,17 @@ function LoginForm() {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-slate-500 text-sm">
-                Don't have an account?{" "}
-                <Link href="/auth/register" className="text-primary-600 font-medium hover:underline">
+            <div className="mt-4 sm:mt-6 text-center">
+              <p className="text-slate-500 text-xs sm:text-sm">
+                Don&apos;t have an account?{" "}
+                <Link href="/auth/register" className="text-pastel-blue-border font-medium hover:underline">
                   Create one
                 </Link>
               </p>
             </div>
           </div>
 
-          <p className="mt-6 text-center text-xs text-slate-400">
+          <p className="mt-4 sm:mt-6 text-center text-[10px] sm:text-xs text-slate-400 px-4">
             By signing in, you agree to our Terms and Privacy Policy
           </p>
         </div>
