@@ -24,10 +24,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired reset link" }, { status: 400 });
     }
 
-    if (resetToken.used) {
-      return NextResponse.json({ error: "This reset link has already been used" }, { status: 400 });
-    }
-
     if (new Date() > resetToken.expiresAt) {
       return NextResponse.json({ error: "This reset link has expired" }, { status: 400 });
     }
@@ -39,10 +35,9 @@ export async function POST(request: NextRequest) {
       data: { password: hashedPassword },
     });
 
-    // Mark token as used
-    await db.passwordResetToken.update({
+    // Delete the used token
+    await db.passwordResetToken.delete({
       where: { id: resetToken.id },
-      data: { used: true },
     });
 
     return NextResponse.json({ message: "Password reset successfully" });

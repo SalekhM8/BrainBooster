@@ -10,8 +10,6 @@ export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-    // Connection pooling is handled by Prisma automatically
-    // These settings optimize query performance
   });
 
 if (process.env.NODE_ENV !== "production") {
@@ -19,7 +17,6 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // Simple in-memory cache for frequently accessed data
-// Scales with serverless - each instance has its own cache
 const cache = new Map<string, { data: unknown; expires: number }>();
 
 export function getCached<T>(key: string): T | null {
@@ -51,7 +48,7 @@ export function invalidateCache(pattern?: string): void {
   }
 }
 
-// Helper for parallel database operations (reduces query time)
+// Helper for parallel database operations
 export async function parallelQueries<T extends readonly unknown[]>(
   queries: [...{ [K in keyof T]: Promise<T[K]> }]
 ): Promise<T> {

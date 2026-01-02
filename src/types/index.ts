@@ -5,42 +5,7 @@ export type YearGroup = "KS3" | "KS4" | "GCSE" | "A_LEVEL";
 export type SubscriptionStatus = "ACTIVE" | "CANCELLED" | "EXPIRED" | "PAST_DUE";
 export type SubscriptionTier = "BASIC" | "PREMIUM";
 
-// Extend next-auth types
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      email: string;
-      firstName: string;
-      lastName: string;
-      role: Role;
-      avatar?: string | null;
-      isActive: boolean;
-    };
-  }
-
-  interface User {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: Role;
-    avatar?: string | null;
-    isActive: boolean;
-  }
-}
-
-declare module "next-auth/jwt" {
-  interface JWT {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: Role;
-    avatar?: string | null;
-    isActive: boolean;
-  }
-}
+// Note: NextAuth types are extended in next-auth.d.ts
 
 // Navigation types
 export interface NavItem {

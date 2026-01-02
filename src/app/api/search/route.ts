@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
         }),
         db.recording.findMany({
           where: {
-            uploaderId: session.user.id,
+            teacherId: session.user.id,
             OR: [
               { title: { contains: query } },
               { description: { contains: query } },

@@ -90,9 +90,9 @@ export async function GET() {
             isCancelled: false,
           },
         }),
-        db.recording.count({ where: { uploaderId: session.user.id } }),
+        db.recording.count({ where: { teacherId: session.user.id } }),
         db.recording.aggregate({
-          where: { uploaderId: session.user.id },
+          where: { teacherId: session.user.id },
           _sum: { viewCount: true },
         }),
       ]);

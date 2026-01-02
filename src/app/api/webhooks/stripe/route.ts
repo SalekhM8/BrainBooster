@@ -196,13 +196,14 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       status = "ACTIVE";
   }
 
-  // Update subscription
+  // Update subscription - use type assertion for Stripe API compatibility
+  const subData = subscription as unknown as { current_period_start: number; current_period_end: number };
   await db.subscription.update({
     where: { id: dbSubscription.id },
     data: {
       status,
-      currentPeriodStart: new Date(subscription.current_period_start * 1000),
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodStart: new Date(subData.current_period_start * 1000),
+      currentPeriodEnd: new Date(subData.current_period_end * 1000),
     },
   });
 }
@@ -240,8 +241,14 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 async function handlePaymentFailed(invoice: Stripe.Invoice) {
-  const subscriptionId = invoice.subscription as string;
+  // Use type assertion for Stripe API compatibility
+  const invoiceData = invoice as unknown as { subscription: string | null };
+  const subscriptionId = invoiceData.subscription;
   
+  if (!subscriptionId) {
+    return;
+  }
+
   const dbSubscription = await db.subscription.findFirst({
     where: { stripeSubscriptionId: subscriptionId },
   });

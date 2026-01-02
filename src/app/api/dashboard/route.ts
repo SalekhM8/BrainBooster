@@ -91,7 +91,7 @@ export async function GET() {
       db.recording.findMany({
         where: {
           isPublished: true,
-          ...(role === "STUDENT" ? whereClause : { uploaderId: userId }),
+          ...(role === "STUDENT" ? whereClause : { teacherId: userId }),
         },
         select: recordingSelectMinimal,
         orderBy: { createdAt: "desc" },
@@ -102,7 +102,7 @@ export async function GET() {
     const data = {
       upcomingSessions,
       totalRecordingsWatched: recordingViews._count,
-      totalWatchTime: recordingViews._sum.watchTime || 0,
+      totalWatchTime: recordingViews._sum.progress || 0,
       subscriptionStatus: user?.subscription?.status || "NONE",
       recentSessions,
       recentRecordings,

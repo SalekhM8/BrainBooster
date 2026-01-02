@@ -27,10 +27,9 @@ export async function POST(request: NextRequest) {
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
-    // Invalidate any existing tokens
-    await db.passwordResetToken.updateMany({
-      where: { userId: user.id, used: false },
-      data: { used: true },
+    // Delete any existing tokens for this user
+    await db.passwordResetToken.deleteMany({
+      where: { userId: user.id },
     });
 
     // Create new token

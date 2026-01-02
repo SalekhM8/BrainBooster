@@ -31,9 +31,9 @@ export async function GET(
     if (session.user.role === "STUDENT") {
       await db.recordingView.upsert({
         where: {
-          userId_recordingId: {
-            userId: session.user.id,
+          recordingId_userId: {
             recordingId: id,
+            userId: session.user.id,
           },
         },
         create: {

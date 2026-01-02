@@ -20,7 +20,7 @@ export function VideoPlayer({ src, title, thumbnail, onProgress, onComplete }: V
   const [showControls, setShowControls] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const controlsTimeout = useRef<NodeJS.Timeout>();
+  const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Detect video type
   const isYouTube = src.includes("youtube.com") || src.includes("youtu.be");
