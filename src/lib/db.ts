@@ -1,23 +1,18 @@
 import { PrismaClient } from "@prisma/client";
 
-// Singleton pattern for Prisma Client
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Create Prisma client - uses standard Prisma for build/dev
-// Turso adapter is used at RUNTIME via API routes
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = db;
-}
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = db;
 
-// Simple in-memory cache
+// Simple in-memory cache for frequently accessed data
 const cache = new Map<string, { data: unknown; expires: number }>();
 
 export function getCached<T>(key: string): T | null {
@@ -49,12 +44,14 @@ export function invalidateCache(pattern?: string): void {
   }
 }
 
+// Helper for parallel queries
 export async function parallelQueries<T extends readonly unknown[]>(
   queries: [...{ [K in keyof T]: Promise<T[K]> }]
 ): Promise<T> {
   return Promise.all(queries) as Promise<T>;
 }
 
+// Common select patterns for optimization
 export const userSelectMinimal = {
   id: true,
   firstName: true,

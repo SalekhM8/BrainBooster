@@ -4,10 +4,10 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("🌱 Seeding database...");
-  console.log("🗑️  Clearing existing data...");
+  console.log("🌱 Seeding database...\n");
 
-  // Clear existing data in correct order (respecting foreign keys)
+  // Clear existing data
+  console.log("🗑️  Clearing existing data...");
   await prisma.notification.deleteMany();
   await prisma.passwordResetToken.deleteMany();
   await prisma.recordingView.deleteMany();
@@ -16,8 +16,7 @@ async function main() {
   await prisma.subscription.deleteMany();
   await prisma.pricingPlan.deleteMany();
   await prisma.user.deleteMany();
-
-  console.log("✅ Database cleared");
+  console.log("✅ Database cleared\n");
 
   // Hash passwords
   const adminPassword = await bcrypt.hash("admin123", 12);
@@ -76,14 +75,9 @@ async function main() {
   const studentData = [
     { firstName: "Suhayb", lastName: "Mahmood", email: "suhayb.mahmood@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
     { firstName: "Aisha", lastName: "Rahman", email: "aisha.rahman@student.com", yearGroup: "GCSE", subjects: ["MATHS"], tier: "BASIC" },
-    { firstName: "Ibrahim", lastName: "Ali", email: "ibrahim.ali@student.com", yearGroup: "A_LEVEL", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
-    { firstName: "Maryam", lastName: "Hassan", email: "maryam.hassan@student.com", yearGroup: "KS4", subjects: ["ENGLISH"], tier: "BASIC" },
-    { firstName: "Zakariya", lastName: "Patel", email: "zakariya.patel@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
-    { firstName: "Khadija", lastName: "Mohammed", email: "khadija.mohammed@student.com", yearGroup: "KS3", subjects: ["MATHS"], tier: "BASIC" },
-    { firstName: "Hamza", lastName: "Qureshi", email: "hamza.qureshi@student.com", yearGroup: "GCSE", subjects: ["ENGLISH"], tier: "BASIC" },
-    { firstName: "Zainab", lastName: "Chaudhry", email: "zainab.chaudhry@student.com", yearGroup: "A_LEVEL", subjects: ["MATHS"], tier: "PREMIUM" },
-    { firstName: "Bilal", lastName: "Siddiqui", email: "bilal.siddiqui@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
-    { firstName: "Amina", lastName: "Malik", email: "amina.malik@student.com", yearGroup: "KS4", subjects: ["MATHS"], tier: "BASIC" },
+    { firstName: "Zainab", lastName: "Ali", email: "zainab.ali@student.com", yearGroup: "A_LEVEL", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
+    { firstName: "Ahmed", lastName: "Hassan", email: "ahmed.hassan@student.com", yearGroup: "KS4", subjects: ["ENGLISH"], tier: "BASIC" },
+    { firstName: "Layla", lastName: "Mohamed", email: "layla.mohamed@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
   ];
 
   const students = await Promise.all(
@@ -116,20 +110,11 @@ async function main() {
   // ==================== SESSIONS ====================
   const now = new Date();
   const sessionData = [
-    // Upcoming sessions
     { title: "Algebra Fundamentals", subject: "MATHS", yearGroup: "GCSE", teacher: teachers[0], daysFromNow: 1, hour: 16 },
     { title: "Quadratic Equations", subject: "MATHS", yearGroup: "GCSE", teacher: teachers[0], daysFromNow: 2, hour: 17 },
-    { title: "Trigonometry Basics", subject: "MATHS", yearGroup: "A_LEVEL", teacher: teachers[0], daysFromNow: 3, hour: 15 },
     { title: "Essay Writing Techniques", subject: "ENGLISH", yearGroup: "GCSE", teacher: teachers[1], daysFromNow: 1, hour: 14 },
     { title: "Shakespeare: Macbeth Analysis", subject: "ENGLISH", yearGroup: "GCSE", teacher: teachers[1], daysFromNow: 2, hour: 15 },
-    { title: "Poetry Analysis", subject: "ENGLISH", yearGroup: "A_LEVEL", teacher: teachers[1], daysFromNow: 4, hour: 16 },
     { title: "Calculus Introduction", subject: "MATHS", yearGroup: "A_LEVEL", teacher: teachers[2], daysFromNow: 2, hour: 18 },
-    { title: "Statistics & Probability", subject: "MATHS", yearGroup: "GCSE", teacher: teachers[2], daysFromNow: 3, hour: 16 },
-    // Past sessions
-    { title: "Basic Arithmetic Review", subject: "MATHS", yearGroup: "KS3", teacher: teachers[0], daysFromNow: -7, hour: 15 },
-    { title: "Grammar Essentials", subject: "ENGLISH", yearGroup: "KS3", teacher: teachers[1], daysFromNow: -5, hour: 14 },
-    { title: "Fractions & Decimals", subject: "MATHS", yearGroup: "KS4", teacher: teachers[0], daysFromNow: -3, hour: 16 },
-    { title: "Creative Writing Workshop", subject: "ENGLISH", yearGroup: "GCSE", teacher: teachers[1], daysFromNow: -2, hour: 15 },
   ];
 
   const sessions = await Promise.all(
@@ -160,16 +145,10 @@ async function main() {
   const recordingData = [
     { title: "Quadratic Equations - Complete Guide", subject: "MATHS", yearGroup: "GCSE", teacher: teachers[0], duration: 2700 },
     { title: "Solving Linear Equations", subject: "MATHS", yearGroup: "GCSE", teacher: teachers[0], duration: 2100 },
-    { title: "Pythagoras Theorem Explained", subject: "MATHS", yearGroup: "KS4", teacher: teachers[0], duration: 1800 },
-    { title: "Circle Theorems", subject: "MATHS", yearGroup: "GCSE", teacher: teachers[0], duration: 2400 },
-    { title: "Differentiation Basics", subject: "MATHS", yearGroup: "A_LEVEL", teacher: teachers[2], duration: 3000 },
-    { title: "Integration Methods", subject: "MATHS", yearGroup: "A_LEVEL", teacher: teachers[2], duration: 3300 },
     { title: "Shakespeare Analysis - Macbeth", subject: "ENGLISH", yearGroup: "GCSE", teacher: teachers[1], duration: 3120 },
     { title: "An Inspector Calls - Themes", subject: "ENGLISH", yearGroup: "GCSE", teacher: teachers[1], duration: 2700 },
-    { title: "Essay Structure Masterclass", subject: "ENGLISH", yearGroup: "GCSE", teacher: teachers[1], duration: 2400 },
-    { title: "Poetry Comparison Techniques", subject: "ENGLISH", yearGroup: "A_LEVEL", teacher: teachers[1], duration: 2100 },
-    { title: "GCSE Maths Exam Tips", subject: "MATHS", yearGroup: "GCSE", teacher: teachers[0], duration: 1800 },
-    { title: "English Language Paper 1 Guide", subject: "ENGLISH", yearGroup: "GCSE", teacher: teachers[1], duration: 2700 },
+    { title: "Differentiation Basics", subject: "MATHS", yearGroup: "A_LEVEL", teacher: teachers[2], duration: 3000 },
+    { title: "Integration Methods", subject: "MATHS", yearGroup: "A_LEVEL", teacher: teachers[2], duration: 3300 },
   ];
 
   const recordings = await Promise.all(
@@ -192,32 +171,16 @@ async function main() {
   );
   console.log(`✅ ${recordings.length} Recordings created`);
 
-  // ==================== NOTIFICATIONS ====================
-  await Promise.all(
-    students.map((student) =>
-      prisma.notification.create({
-        data: {
-          userId: student.id,
-          type: "SYSTEM",
-          title: "Welcome to BrainBooster! 🎉",
-          message: "Your account is ready. Check out your timetable and start learning!",
-          link: "/dashboard",
-          isRead: false,
-        },
-      })
-    )
-  );
-  console.log("✅ Notifications created");
-
   // ==================== PRICING PLANS ====================
+  // NOTE: Update stripePriceIdMonthly/Yearly with real Stripe Price IDs after creating them
   await prisma.pricingPlan.createMany({
     data: [
       {
         name: "Basic",
         description: "Perfect for getting started with online tuition",
         tier: "BASIC",
-        priceMonthly: 4900,
-        priceYearly: 49000,
+        priceMonthly: 4900, // £49/month
+        priceYearly: 49000, // £490/year
         features: JSON.stringify([
           "Access to live classes",
           "Full recording library",
@@ -229,13 +192,15 @@ async function main() {
         isPopular: false,
         isActive: true,
         sortOrder: 1,
+        stripePriceIdMonthly: null, // Set after creating Stripe products
+        stripePriceIdYearly: null,
       },
       {
         name: "Premium",
         description: "Everything you need for exam success",
         tier: "PREMIUM",
-        priceMonthly: 7900,
-        priceYearly: 79000,
+        priceMonthly: 7900, // £79/month
+        priceYearly: 79000, // £790/year
         features: JSON.stringify([
           "Everything in Basic",
           "Homework portal access",
@@ -248,38 +213,44 @@ async function main() {
         isPopular: true,
         isActive: true,
         sortOrder: 2,
+        stripePriceIdMonthly: null,
+        stripePriceIdYearly: null,
       },
     ],
   });
   console.log("✅ Pricing plans created");
 
+  // ==================== NOTIFICATIONS ====================
+  await prisma.notification.createMany({
+    data: [
+      {
+        userId: students[0].id,
+        title: "Welcome to BrainBooster!",
+        message: "Your account has been set up. Start exploring live classes and recordings.",
+        type: "SUCCESS",
+        isRead: false,
+      },
+      {
+        userId: students[0].id,
+        title: "New session scheduled",
+        message: "Algebra Fundamentals is scheduled for tomorrow at 4:00 PM.",
+        type: "INFO",
+        isRead: false,
+      },
+    ],
+  });
+  console.log("✅ Notifications created");
+
   // ==================== SUMMARY ====================
-  console.log("\n🎉 Database seeded successfully!\n");
-  console.log("═══════════════════════════════════════════════════");
-  console.log("                    TEST ACCOUNTS                   ");
-  console.log("═══════════════════════════════════════════════════");
-  console.log("\n👨‍💼 ADMIN:");
-  console.log("   Email:    admin@brainbooster.com");
-  console.log("   Password: admin123");
-  console.log("   Name:     Salekh Mahmood");
-  console.log("\n👩‍🏫 TEACHERS:");
-  console.log("   Email:    yusuf.hussain@brainbooster.com");
-  console.log("   Password: teacher123");
-  console.log("");
-  console.log("   Email:    fatima.khan@brainbooster.com");
-  console.log("   Password: teacher123");
-  console.log("");
-  console.log("   Email:    omar.ahmed@brainbooster.com");
-  console.log("   Password: teacher123");
-  console.log("\n👨‍🎓 STUDENTS:");
-  console.log("   Email:    suhayb.mahmood@student.com (Premium)");
-  console.log("   Password: student123");
-  console.log("");
-  console.log("   Email:    aisha.rahman@student.com (Basic)");
-  console.log("   Password: student123");
-  console.log("");
-  console.log("   ... and 8 more students");
-  console.log("\n═══════════════════════════════════════════════════");
+  console.log("\n========================================");
+  console.log("🎉 Database seeded successfully!");
+  console.log("========================================\n");
+  console.log("Login Credentials:");
+  console.log("------------------");
+  console.log("Admin:   admin@brainbooster.com / admin123");
+  console.log("Teacher: yusuf.hussain@brainbooster.com / teacher123");
+  console.log("Student: suhayb.mahmood@student.com / student123");
+  console.log("\n");
 }
 
 main()
