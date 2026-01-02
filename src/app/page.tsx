@@ -47,10 +47,26 @@ export default function HomePage() {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMounted(true);
+    // Detect mobile/touch devices
+    const checkMobile = () => {
+      const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      const isSmallScreen = window.innerWidth < 768;
+      setIsMobile(isTouchDevice || isSmallScreen);
+      // On mobile, skip the scroll effect and show content directly
+      if (isTouchDevice || isSmallScreen) {
+        setShowContent(true);
+        setIsFullScreen(true);
+        setImageScale(1);
+      }
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Handle wheel scroll to control image size
@@ -105,7 +121,7 @@ export default function HomePage() {
   }, [showContent]);
 
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || isMobile) return;
     
     window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("scroll", handleContentScroll);
@@ -114,10 +130,10 @@ export default function HomePage() {
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("scroll", handleContentScroll);
     };
-  }, [handleWheel, handleContentScroll, isMounted]);
+  }, [handleWheel, handleContentScroll, isMounted, isMobile]);
 
   // Calculate visual properties
-  const navOpacity = isFullScreen ? 1 : 0;
+  const navOpacity = isMobile ? 1 : (isFullScreen ? 1 : 0);
   const taglineOpacity = imageScale < 0.95 ? 1 : 0;
   const scrollHintOpacity = imageScale < 0.6 ? 1 : 0;
 
@@ -159,7 +175,8 @@ export default function HomePage() {
         </div>
       </nav>
 
-      {/* Hero Section - Fixed, scales with scroll */}
+      {/* Hero Section - Fixed on desktop, hidden on mobile */}
+      {!isMobile && (
       <div 
         className="fixed inset-0 flex items-center justify-center z-10"
         style={{ 
@@ -225,20 +242,48 @@ export default function HomePage() {
           <ChevronDown className="w-6 h-6 animate-bounce" />
         </div>
       </div>
+      )}
 
-      {/* Spacer for when image is fixed */}
-      <div style={{ height: showContent ? "0" : "100vh" }} />
+      {/* Spacer for when image is fixed - not needed on mobile */}
+      {!isMobile && <div style={{ height: showContent ? "0" : "100vh" }} />}
 
-      {/* Main Content - Slides up when image is full */}
+      {/* Main Content - Slides up when image is full (desktop) or shows directly (mobile) */}
       <div 
         ref={contentRef}
-        style={{
+        style={isMobile ? {} : {
           transform: showContent ? "translateY(0)" : "translateY(100vh)",
           opacity: showContent ? 1 : 0,
           transition: "transform 0.6s ease-out, opacity 0.4s ease-out"
         }}
         className="relative z-20 bg-pastel-blue/30"
       >
+        {/* Mobile Hero */}
+        {isMobile && (
+          <section className="relative h-[70vh] flex items-center justify-center overflow-hidden">
+            <Image 
+              src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=2070" 
+              alt="Students learning together"
+              fill
+              priority
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-[#3A6AB8]/70" />
+            <div className="relative z-10 text-center p-6">
+              <h1 className="text-4xl font-bold tracking-tightest leading-tight text-white mb-4">
+                Master Your <span className="italic-accent text-pastel-cream">Future</span>
+              </h1>
+              <p className="text-lg text-white font-bold tracking-tightest mb-8 max-w-md mx-auto">
+                Expert tutoring for Maths & English, designed for clarity and success.
+              </p>
+              <Link href="/pricing">
+                <Button size="lg" className="bg-white text-pastel-blue-border hover:bg-pastel-cream border-2 border-white font-bold shadow-xl">
+                  Get Started <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+            </div>
+          </section>
+        )}
+
         {/* Features Section */}
         <section id="features" className="py-32 px-6 bg-pastel-blue/40">
           <div className="max-w-6xl mx-auto">
