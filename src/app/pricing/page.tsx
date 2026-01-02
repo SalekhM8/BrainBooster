@@ -92,17 +92,12 @@ export default function PricingPage() {
           ) : (
             <div className="grid md:grid-cols-2 gap-6">
               {sortedPlans.map((plan) => (
-                <div key={plan.id} className="relative pt-4">
-                  {plan.isPopular && (
-                    <Badge variant="primary" className="absolute top-0 left-1/2 -translate-x-1/2 z-10">
-                      Most Popular
-                    </Badge>
-                  )}
-                  <Card
-                    className={`p-8 bg-pastel-cream h-full ${
-                      plan.isPopular ? "border-2 border-pastel-blue-border ring-2 ring-pastel-blue-border/20" : "border border-pastel-blue-border/50"
-                    }`}
-                  >
+                <Card
+                  key={plan.id}
+                  className={`p-8 bg-pastel-cream ${
+                    plan.isPopular ? "border-2 border-pastel-blue-border" : "border border-pastel-blue-border/50"
+                  }`}
+                >
                   
                   <h3 className="text-2xl font-bold text-pastel-blue-text mb-2">{plan.name}</h3>
                   <p className="text-pastel-blue-text/60 text-sm mb-6">{plan.description}</p>
@@ -135,8 +130,7 @@ export default function PricingPage() {
                       {plan.tier === "PREMIUM" ? "Go Premium" : "Get Started"}
                     </Button>
                   </Link>
-                  </Card>
-                </div>
+                </Card>
               ))}
             </div>
           )}
