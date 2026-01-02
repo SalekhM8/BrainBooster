@@ -3,17 +3,6 @@ import { headers } from "next/headers";
 import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
-import bcrypt from "bcryptjs";
-
-// Generate a random password
-function generatePassword(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let password = "";
-  for (let i = 0; i < 12; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -119,9 +108,13 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     return;
   }
 
-  // Create new user
-  const tempPassword = generatePassword();
-  const hashedPassword = await bcrypt.hash(tempPassword, 12);
+  // Create new user - use the password hash from checkout form
+  const hashedPassword = metadata.hashedPassword;
+  
+  if (!hashedPassword) {
+    console.error("No hashed password in metadata");
+    return;
+  }
 
   const subjects = metadata.subjects ? JSON.parse(metadata.subjects) : ["MATHS", "ENGLISH"];
 
@@ -160,8 +153,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
     },
   });
 
-  // TODO: Send welcome email with temporary password
-  console.log(`New user created: ${email} with temp password: ${tempPassword}`);
+  console.log(`New user created: ${email}`);
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {

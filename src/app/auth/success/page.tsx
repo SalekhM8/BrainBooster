@@ -71,11 +71,8 @@ function SuccessContent() {
         </p>
         
         <div className="bg-pastel-blue/30 rounded-xl p-4 mb-6 text-left">
-          <p className="text-sm text-slate-700 mb-2">
-            <strong>Important:</strong> Check your email for your login credentials.
-          </p>
-          <p className="text-sm text-slate-500">
-            A temporary password has been sent to your email. You can change it after logging in.
+          <p className="text-sm text-slate-700">
+            Your account is ready. Log in with the email and password you just created.
           </p>
         </div>
 

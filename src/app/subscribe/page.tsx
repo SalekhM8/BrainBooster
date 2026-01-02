@@ -37,6 +37,8 @@ function SubscribeForm() {
     firstName: "",
     lastName: "",
     email: "",
+    password: "",
+    confirmPassword: "",
     yearGroup: "GCSE",
   });
 
@@ -65,6 +67,17 @@ function SubscribeForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    // Validate password
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -76,6 +89,7 @@ function SubscribeForm() {
           planId,
           billingInterval,
           email: form.email,
+          password: form.password,
           firstName: form.firstName,
           lastName: form.lastName,
           yearGroup: form.yearGroup,
@@ -250,6 +264,23 @@ function SubscribeForm() {
                   type="email"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  required
+                />
+
+                <Input
+                  label="Password"
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  placeholder="At least 6 characters"
+                  required
+                />
+
+                <Input
+                  label="Confirm Password"
+                  type="password"
+                  value={form.confirmPassword}
+                  onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
                   required
                 />
 

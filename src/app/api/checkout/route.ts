@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +10,7 @@ export async function POST(request: NextRequest) {
       planId, 
       billingInterval = "monthly",
       email,
+      password,
       firstName,
       lastName,
       yearGroup,
@@ -16,12 +18,22 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate required fields
-    if (!planId || !email || !firstName || !lastName) {
+    if (!planId || !email || !password || !firstName || !lastName) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
+
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: "Password must be at least 6 characters" },
+        { status: 400 }
+      );
+    }
+
+    // Hash the password to store in metadata
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     // Get the pricing plan
     const plan = await db.pricingPlan.findUnique({
@@ -79,6 +91,7 @@ export async function POST(request: NextRequest) {
         lastName,
         yearGroup: yearGroup || "",
         subjects: JSON.stringify(subjects || []),
+        hashedPassword,
       },
       success_url: `${appUrl}/auth/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/pricing?cancelled=true`,
