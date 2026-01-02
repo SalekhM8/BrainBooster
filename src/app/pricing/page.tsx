@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import useSWR from "swr";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { fetcher } from "@/lib/fetcher";
-
-type Subject = "MATHS" | "ENGLISH" | "BOTH";
+import { Check, Loader2 } from "lucide-react";
 
 interface PricingPlan {
   id: string;
@@ -24,66 +23,38 @@ interface PricingPlan {
 }
 
 export default function PricingPage() {
-  const [selectedSubject, setSelectedSubject] = useState<Subject>("BOTH");
-
-  // Fetch dynamic pricing plans
-  const { data: plans, isLoading } = useSWR<PricingPlan[]>(
+  // Fetch dynamic pricing plans from database
+  const { data: plans, isLoading, error } = useSWR<PricingPlan[]>(
     "/api/pricing-plans?active=true",
     fetcher
   );
 
-  // Calculate price based on subjects
-  const getPrice = (plan: PricingPlan) => {
-    const basePrice = plan.priceMonthly / 100;
-    // If both subjects selected and plan supports both, add 50%
-    if (selectedSubject === "BOTH" && plan.subjects.length === 2) {
-      return Math.round(basePrice * 1.5);
-    }
-    return basePrice;
-  };
-
-  // Filter features to show appropriate subjects
-  const getSubjectBadges = (plan: PricingPlan) => {
-    const badges = [];
-    if ((selectedSubject === "MATHS" || selectedSubject === "BOTH") && plan.subjects.includes("MATHS")) {
-      badges.push(<Badge key="maths" variant="primary">Mathematics</Badge>);
-    }
-    if ((selectedSubject === "ENGLISH" || selectedSubject === "BOTH") && plan.subjects.includes("ENGLISH")) {
-      badges.push(<Badge key="english" variant="warning">English</Badge>);
-    }
-    return badges;
-  };
-
-  // Sorted plans (basic first, then premium)
+  // Sort plans by sortOrder/price
   const sortedPlans = useMemo(() => {
-    if (!plans) return [];
-    return [...plans].sort((a, b) => {
-      if (a.tier === "BASIC" && b.tier === "PREMIUM") return -1;
-      if (a.tier === "PREMIUM" && b.tier === "BASIC") return 1;
-      return a.priceMonthly - b.priceMonthly;
-    });
+    if (!plans || !Array.isArray(plans)) return [];
+    return [...plans].sort((a, b) => a.priceMonthly - b.priceMonthly);
   }, [plans]);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-pastel-blue">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-slate-100">
+      <nav className="sticky top-0 z-50 bg-pastel-cream border-b border-pastel-blue-border/30">
         <div className="max-w-6xl mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-8 h-8 bg-pastel-blue-border rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-pastel-cream" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-slate-900">BrainBooster</span>
+              <span className="text-xl font-bold text-pastel-blue-text">BrainBooster</span>
             </Link>
             <div className="flex items-center gap-4">
               <Link href="/auth/login">
                 <Button variant="ghost" size="sm">Login</Button>
               </Link>
               <Link href="/">
-                <Button variant="ghost" size="sm">← Back to Home</Button>
+                <Button variant="outline" size="sm">← Back to Home</Button>
               </Link>
             </div>
           </div>
@@ -93,63 +64,28 @@ export default function PricingPage() {
       {/* Hero */}
       <section className="py-16 px-6 text-center">
         <Badge variant="primary" className="mb-4">Simple Pricing</Badge>
-        <h1 className="text-4xl font-bold text-slate-900 mb-4">
+        <h1 className="text-4xl font-bold text-pastel-blue-text mb-4">
           Invest in Your Future
         </h1>
-        <p className="text-lg text-slate-600 max-w-xl mx-auto">
-          Choose your subjects and start learning with expert tutors today.
+        <p className="text-lg text-pastel-blue-text/70 max-w-xl mx-auto">
+          Choose your plan and start learning with expert tutors today.
         </p>
       </section>
 
-      {/* Subject Selection */}
-      <section className="pb-8 px-6">
-        <div className="max-w-md mx-auto">
-          <label className="block text-sm font-medium text-slate-700 text-center mb-3">
-            Select Subject(s)
-          </label>
-          <div className="flex gap-1 p-1 bg-slate-100 rounded-lg">
-            {[
-              { value: "MATHS", label: "Maths Only" },
-              { value: "ENGLISH", label: "English Only" },
-              { value: "BOTH", label: "Both Subjects" },
-            ].map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setSelectedSubject(option.value as Subject)}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-                  selectedSubject === option.value
-                    ? "bg-white text-slate-900 shadow-sm"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Cards */}
-      <section className="py-8 px-6">
+      <section className="py-8 px-6 pb-16">
         <div className="max-w-4xl mx-auto">
           {isLoading ? (
-            <div className="grid md:grid-cols-2 gap-6">
-              {[1, 2].map((i) => (
-                <Card key={i} variant="bordered" className="p-8 animate-pulse">
-                  <div className="h-6 w-24 bg-slate-200 rounded mb-2" />
-                  <div className="h-4 w-48 bg-slate-200 rounded mb-6" />
-                  <div className="h-10 w-32 bg-slate-200 rounded mb-6" />
-                  <div className="space-y-3 mb-8">
-                    {[1, 2, 3, 4].map((j) => (
-                      <div key={j} className="h-4 bg-slate-200 rounded" />
-                    ))}
-                  </div>
-                  <div className="h-10 bg-slate-200 rounded" />
-                </Card>
-              ))}
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-pastel-blue-border" />
             </div>
+          ) : error ? (
+            <Card variant="bordered" className="p-12 text-center bg-pastel-cream">
+              <p className="text-red-600">Failed to load pricing plans.</p>
+              <p className="text-sm text-slate-400 mt-2">Please refresh the page.</p>
+            </Card>
           ) : sortedPlans.length === 0 ? (
-            <Card variant="bordered" className="p-12 text-center">
+            <Card variant="bordered" className="p-12 text-center bg-pastel-cream">
               <p className="text-slate-500">No pricing plans available at the moment.</p>
               <p className="text-sm text-slate-400 mt-2">Please check back later.</p>
             </Card>
@@ -158,8 +94,8 @@ export default function PricingPage() {
               {sortedPlans.map((plan) => (
                 <Card
                   key={plan.id}
-                  className={`p-8 relative ${
-                    plan.isPopular ? "border-2 border-primary-600" : "border border-slate-200"
+                  className={`p-8 relative bg-pastel-cream ${
+                    plan.isPopular ? "border-2 border-pastel-blue-border ring-2 ring-pastel-blue-border/20" : "border border-pastel-blue-border/50"
                   }`}
                 >
                   {plan.isPopular && (
@@ -168,38 +104,33 @@ export default function PricingPage() {
                     </Badge>
                   )}
                   
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">{plan.name}</h3>
-                  <p className="text-slate-500 text-sm mb-6">{plan.description}</p>
+                  <h3 className="text-2xl font-bold text-pastel-blue-text mb-2">{plan.name}</h3>
+                  <p className="text-pastel-blue-text/60 text-sm mb-6">{plan.description}</p>
                   
                   <div className="mb-6">
-                    <span className="text-4xl font-bold text-slate-900">£{getPrice(plan)}</span>
-                    <span className="text-slate-500">/month</span>
+                    <span className="text-5xl font-bold text-pastel-blue-text">£{Math.round(plan.priceMonthly / 100)}</span>
+                    <span className="text-pastel-blue-text/60">/month</span>
                     {plan.priceYearly && (
-                      <p className="text-sm text-slate-400 mt-1">
-                        or £{Math.round((plan.priceYearly / 100) * (selectedSubject === "BOTH" ? 1.5 : 1))}/year (save 17%)
+                      <p className="text-sm text-pastel-blue-text/50 mt-1">
+                        or £{Math.round(plan.priceYearly / 100)}/year (save 17%)
                       </p>
                     )}
                   </div>
 
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {getSubjectBadges(plan)}
-                  </div>
-
                   <ul className="space-y-3 mb-8">
                     {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-3 text-sm text-slate-600">
-                        <svg className="w-5 h-5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
+                      <li key={feature} className="flex items-center gap-3 text-sm text-pastel-blue-text/80">
+                        <Check className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                         {feature}
                       </li>
                     ))}
                   </ul>
 
-                  <Link href={`/subscribe?plan=${plan.id}&subject=${selectedSubject}`}>
+                  <Link href={`/subscribe?plan=${plan.id}`}>
                     <Button
-                      variant={plan.isPopular ? "primary" : "outline"}
+                      variant={plan.isPopular ? "primary" : "secondary"}
                       className="w-full"
+                      size="lg"
                     >
                       {plan.tier === "PREMIUM" ? "Go Premium" : "Get Started"}
                     </Button>
@@ -212,9 +143,9 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16 px-6 bg-slate-50">
+      <section className="py-16 px-6 bg-pastel-cream">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold text-slate-900 text-center mb-8">
+          <h2 className="text-2xl font-bold text-pastel-blue-text text-center mb-8">
             Frequently Asked Questions
           </h2>
           <div className="space-y-4">
@@ -224,9 +155,9 @@ export default function PricingPage() {
               { q: "How do live classes work?", a: "Classes are via Zoom. Join with one click from your dashboard." },
               { q: "Can I cancel anytime?", a: "Yes, cancel anytime. You keep access until your period ends." },
             ].map((faq) => (
-              <Card key={faq.q} variant="bordered" className="p-6">
-                <h3 className="font-semibold text-slate-900 mb-2">{faq.q}</h3>
-                <p className="text-sm text-slate-600">{faq.a}</p>
+              <Card key={faq.q} variant="bordered" className="p-6 bg-white">
+                <h3 className="font-semibold text-pastel-blue-text mb-2">{faq.q}</h3>
+                <p className="text-sm text-pastel-blue-text/70">{faq.a}</p>
               </Card>
             ))}
           </div>
@@ -234,8 +165,8 @@ export default function PricingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 border-t border-slate-100">
-        <p className="text-center text-sm text-slate-400">
+      <footer className="py-8 px-6 border-t border-pastel-blue-border/30 bg-pastel-cream">
+        <p className="text-center text-sm text-pastel-blue-text/50">
           © 2024 BrainBooster. All rights reserved.
         </p>
       </footer>
