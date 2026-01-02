@@ -355,7 +355,7 @@ export default function HomePage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-6 justify-center">
                   <Link href="/pricing">
-                    <Button size="lg" className="h-16 px-12 text-lg">Create Free Account</Button>
+                    <Button size="lg" className="h-16 px-12 text-lg">View Plans & Subscribe</Button>
                   </Link>
                   <Button variant="secondary" size="lg" className="h-16 px-12 text-lg">Talk to an Advisor</Button>
                 </div>
