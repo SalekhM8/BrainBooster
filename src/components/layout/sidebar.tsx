@@ -64,14 +64,17 @@ export function Sidebar({ sections }: SidebarProps) {
       )}
 
       {/* Sidebar - PASTEL BLUE DOMINANT */}
+      {/* On mobile: fixed, hidden off-screen, doesn't take up flex space */}
+      {/* On desktop (lg+): relative, visible, takes up flex space */}
       <aside className={`
         fixed lg:relative
         w-[280px] sm:w-72 h-screen 
         bg-pastel-blue border-r-2 border-pastel-blue-border/30 
-        flex flex-col relative z-50
+        flex-col z-50
         shadow-[4px_0_24px_-12px_rgba(123,163,224,0.3)]
         transition-transform duration-300 ease-out
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        hidden lg:flex
+        ${isMobileOpen ? "!flex translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}>
         {/* Logo */}
         <div className="h-20 sm:h-24 px-5 sm:px-8 flex items-center border-b-2 border-pastel-blue-border/20 relative">

@@ -37,9 +37,10 @@ export default function StudentDashboardLayout({
   return (
     <div className="flex h-screen bg-pastel-blue" suppressHydrationWarning>
       <Sidebar sections={studentNavigation} />
-      <div className="flex-1 flex flex-col overflow-hidden w-full">
+      {/* Main content - full width on mobile, beside sidebar on desktop */}
+      <div className="flex-1 flex flex-col overflow-hidden w-full lg:w-auto">
         <DashboardHeader />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 bg-pastel-blue/50">
+        <main className="flex-1 overflow-y-auto p-4 pt-16 sm:p-6 sm:pt-6 lg:p-10 bg-pastel-blue/50">
           {children}
         </main>
       </div>
