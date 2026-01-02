@@ -29,8 +29,8 @@ async function main() {
     data: {
       email: "admin@brainbooster.com",
       password: adminPassword,
-      firstName: "Admin",
-      lastName: "User",
+      firstName: "Salekh",
+      lastName: "Mahmood",
       role: "ADMIN",
       isActive: true,
     },
@@ -41,30 +41,30 @@ async function main() {
   const teachers = await Promise.all([
     prisma.user.create({
       data: {
-        email: "john.smith@brainbooster.com",
+        email: "yusuf.hussain@brainbooster.com",
         password: teacherPassword,
-        firstName: "John",
-        lastName: "Smith",
+        firstName: "Yusuf",
+        lastName: "Hussain",
         role: "TEACHER",
         isActive: true,
       },
     }),
     prisma.user.create({
       data: {
-        email: "sarah.johnson@brainbooster.com",
+        email: "fatima.khan@brainbooster.com",
         password: teacherPassword,
-        firstName: "Sarah",
-        lastName: "Johnson",
+        firstName: "Fatima",
+        lastName: "Khan",
         role: "TEACHER",
         isActive: true,
       },
     }),
     prisma.user.create({
       data: {
-        email: "michael.chen@brainbooster.com",
+        email: "omar.ahmed@brainbooster.com",
         password: teacherPassword,
-        firstName: "Michael",
-        lastName: "Chen",
+        firstName: "Omar",
+        lastName: "Ahmed",
         role: "TEACHER",
         isActive: true,
       },
@@ -74,16 +74,16 @@ async function main() {
 
   // ==================== STUDENTS ====================
   const studentData = [
-    { firstName: "Emma", lastName: "Wilson", email: "emma.wilson@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
-    { firstName: "James", lastName: "Brown", email: "james.brown@student.com", yearGroup: "GCSE", subjects: ["MATHS"], tier: "BASIC" },
-    { firstName: "Olivia", lastName: "Taylor", email: "olivia.taylor@student.com", yearGroup: "A_LEVEL", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
-    { firstName: "William", lastName: "Anderson", email: "william.anderson@student.com", yearGroup: "KS4", subjects: ["ENGLISH"], tier: "BASIC" },
-    { firstName: "Sophia", lastName: "Thomas", email: "sophia.thomas@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
-    { firstName: "Noah", lastName: "Jackson", email: "noah.jackson@student.com", yearGroup: "KS3", subjects: ["MATHS"], tier: "BASIC" },
-    { firstName: "Ava", lastName: "White", email: "ava.white@student.com", yearGroup: "GCSE", subjects: ["ENGLISH"], tier: "BASIC" },
-    { firstName: "Liam", lastName: "Harris", email: "liam.harris@student.com", yearGroup: "A_LEVEL", subjects: ["MATHS"], tier: "PREMIUM" },
-    { firstName: "Isabella", lastName: "Martin", email: "isabella.martin@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
-    { firstName: "Mason", lastName: "Garcia", email: "mason.garcia@student.com", yearGroup: "KS4", subjects: ["MATHS"], tier: "BASIC" },
+    { firstName: "Suhayb", lastName: "Mahmood", email: "suhayb.mahmood@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
+    { firstName: "Aisha", lastName: "Rahman", email: "aisha.rahman@student.com", yearGroup: "GCSE", subjects: ["MATHS"], tier: "BASIC" },
+    { firstName: "Ibrahim", lastName: "Ali", email: "ibrahim.ali@student.com", yearGroup: "A_LEVEL", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
+    { firstName: "Maryam", lastName: "Hassan", email: "maryam.hassan@student.com", yearGroup: "KS4", subjects: ["ENGLISH"], tier: "BASIC" },
+    { firstName: "Zakariya", lastName: "Patel", email: "zakariya.patel@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
+    { firstName: "Khadija", lastName: "Mohammed", email: "khadija.mohammed@student.com", yearGroup: "KS3", subjects: ["MATHS"], tier: "BASIC" },
+    { firstName: "Hamza", lastName: "Qureshi", email: "hamza.qureshi@student.com", yearGroup: "GCSE", subjects: ["ENGLISH"], tier: "BASIC" },
+    { firstName: "Zainab", lastName: "Chaudhry", email: "zainab.chaudhry@student.com", yearGroup: "A_LEVEL", subjects: ["MATHS"], tier: "PREMIUM" },
+    { firstName: "Bilal", lastName: "Siddiqui", email: "bilal.siddiqui@student.com", yearGroup: "GCSE", subjects: ["MATHS", "ENGLISH"], tier: "PREMIUM" },
+    { firstName: "Amina", lastName: "Malik", email: "amina.malik@student.com", yearGroup: "KS4", subjects: ["MATHS"], tier: "BASIC" },
   ];
 
   const students = await Promise.all(
@@ -157,7 +157,6 @@ async function main() {
   console.log(`✅ ${sessions.length} Sessions created`);
 
   // ==================== RECORDINGS ====================
-  // View counts start at 0 - they will increment when students watch recordings
   const recordingData = [
     { title: "Quadratic Equations - Complete Guide", subject: "MATHS", yearGroup: "GCSE", teacher: teachers[0], duration: 2700 },
     { title: "Solving Linear Equations", subject: "MATHS", yearGroup: "GCSE", teacher: teachers[0], duration: 2100 },
@@ -181,20 +180,19 @@ async function main() {
           description: `Complete guide to ${r.title.toLowerCase()}.`,
           subject: r.subject,
           yearGroup: r.yearGroup,
-          videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Sample video URL
+          videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
           thumbnailUrl: null,
           duration: r.duration,
           teacherId: r.teacher.id,
-          viewCount: 0, // Real view counts - start at 0
+          viewCount: 0,
           isPublished: true,
         },
       })
     )
   );
-  console.log(`✅ ${recordings.length} Recordings created (all with 0 views)`);
+  console.log(`✅ ${recordings.length} Recordings created`);
 
   // ==================== NOTIFICATIONS ====================
-  // Create welcome notifications for all students
   await Promise.all(
     students.map((student) =>
       prisma.notification.create({
@@ -209,28 +207,6 @@ async function main() {
       })
     )
   );
-
-  // Create some additional notifications
-  await prisma.notification.createMany({
-    data: [
-      {
-        userId: students[0].id,
-        type: "SESSION_REMINDER",
-        title: "Upcoming Class",
-        message: "Algebra Fundamentals starts in 24 hours",
-        link: "/dashboard/live-classes",
-        isRead: false,
-      },
-      {
-        userId: students[0].id,
-        type: "NEW_RECORDING",
-        title: "New Recording Available",
-        message: "GCSE Maths Exam Tips has been uploaded",
-        link: "/dashboard/recordings",
-        isRead: true,
-      },
-    ],
-  });
   console.log("✅ Notifications created");
 
   // ==================== PRICING PLANS ====================
@@ -285,32 +261,25 @@ async function main() {
   console.log("\n👨‍💼 ADMIN:");
   console.log("   Email:    admin@brainbooster.com");
   console.log("   Password: admin123");
+  console.log("   Name:     Salekh Mahmood");
   console.log("\n👩‍🏫 TEACHERS:");
-  console.log("   Email:    john.smith@brainbooster.com");
+  console.log("   Email:    yusuf.hussain@brainbooster.com");
   console.log("   Password: teacher123");
   console.log("");
-  console.log("   Email:    sarah.johnson@brainbooster.com");
+  console.log("   Email:    fatima.khan@brainbooster.com");
   console.log("   Password: teacher123");
   console.log("");
-  console.log("   Email:    michael.chen@brainbooster.com");
+  console.log("   Email:    omar.ahmed@brainbooster.com");
   console.log("   Password: teacher123");
   console.log("\n👨‍🎓 STUDENTS:");
-  console.log("   Email:    emma.wilson@student.com (Premium)");
+  console.log("   Email:    suhayb.mahmood@student.com (Premium)");
   console.log("   Password: student123");
   console.log("");
-  console.log("   Email:    james.brown@student.com (Basic)");
+  console.log("   Email:    aisha.rahman@student.com (Basic)");
   console.log("   Password: student123");
   console.log("");
   console.log("   ... and 8 more students");
   console.log("\n═══════════════════════════════════════════════════");
-  console.log("\n📊 Seeded Data Summary:");
-  console.log(`   • 1 Admin`);
-  console.log(`   • ${teachers.length} Teachers`);
-  console.log(`   • ${students.length} Students`);
-  console.log(`   • ${sessions.length} Sessions`);
-  console.log(`   • ${recordings.length} Recordings`);
-  console.log(`   • 2 Pricing Plans`);
-  console.log("");
 }
 
 main()
