@@ -1,65 +1,411 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useRef, useEffect, useState, useCallback } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Video, 
+  BookOpen, 
+  Sparkles, 
+  CheckCircle2, 
+  ArrowRight, 
+  GraduationCap, 
+  Lock,
+  ChevronRight,
+  ChevronDown
+} from "lucide-react";
+
+// Static features data with images
+const features = [
+  {
+    title: "Live Interactive Classes",
+    desc: "Join expert-led sessions designed for deep understanding and engagement.",
+    icon: Video,
+    image: "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?auto=format&fit=crop&q=80&w=600",
+  },
+  {
+    title: "Recording Library",
+    desc: "Access every past lesson anytime. Perfect for revision and reinforcement.",
+    icon: BookOpen,
+    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&q=80&w=600",
+  },
+  {
+    title: "Personalized Support",
+    desc: "Our tutors are dedicated to your individual growth and exam success.",
+    icon: Sparkles,
+    image: "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=600",
+  }
+];
+
+const levels = ["KS3 Foundations", "GCSE Prep", "A-Level Mastery", "Exam Techniques"];
+
+export default function HomePage() {
+  const [imageScale, setImageScale] = useState(0.5); // Start at 50% size
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Handle wheel scroll to control image size
+  const handleWheel = useCallback((e: WheelEvent) => {
+    if (!isMounted) return;
+    
+    // If content is showing and we're scrolling in content area, let normal scroll happen
+    if (showContent && contentRef.current) {
+      const contentTop = contentRef.current.getBoundingClientRect().top;
+      if (contentTop <= 0) {
+        return; // Allow normal scrolling in content
+      }
+    }
+
+    e.preventDefault();
+    
+    const delta = e.deltaY;
+    const sensitivity = 0.0008; // Very slow, smooth scaling
+    
+    setImageScale(prev => {
+      let newScale = prev + (delta * sensitivity);
+      
+      // Clamp between 0.4 (40%) and 1.0 (100%)
+      newScale = Math.max(0.4, Math.min(1.0, newScale));
+      
+      // Check if we've reached full screen
+      if (newScale >= 0.98) {
+        setIsFullScreen(true);
+        if (delta > 0) {
+          // Scrolling down past full screen - show content
+          setShowContent(true);
+        }
+      } else {
+        setIsFullScreen(false);
+        setShowContent(false);
+      }
+      
+      return newScale;
+    });
+  }, [isMounted, showContent]);
+
+  // Handle scroll when content is visible
+  const handleContentScroll = useCallback(() => {
+    if (!showContent || !contentRef.current) return;
+    
+    const scrollTop = window.scrollY;
+    
+    // If scrolled back to top and trying to scroll up more, shrink image
+    if (scrollTop === 0) {
+      setShowContent(false);
+    }
+  }, [showContent]);
+
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("scroll", handleContentScroll);
+    
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("scroll", handleContentScroll);
+    };
+  }, [handleWheel, handleContentScroll, isMounted]);
+
+  // Calculate visual properties
+  const navOpacity = isFullScreen ? 1 : 0;
+  const taglineOpacity = imageScale < 0.95 ? 1 : 0;
+  const scrollHintOpacity = imageScale < 0.6 ? 1 : 0;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="relative bg-pastel-blue/40 overflow-x-hidden">
+      {/* Navigation - Only shows when image is full screen */}
+      <nav 
+        style={{ 
+          opacity: navOpacity,
+          pointerEvents: navOpacity > 0.5 ? "auto" : "none",
+          transition: "opacity 0.3s ease-out"
+        }}
+        className="fixed top-0 left-0 right-0 z-50 bg-pastel-blue/95 backdrop-blur-xl border-b-2 border-pastel-blue-border/40"
+      >
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-20">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="w-10 h-10 bg-pastel-blue-border/20 border-2 border-pastel-blue-border rounded-xl flex items-center justify-center transition-transform group-hover:scale-105">
+                <Lock className="w-5 h-5 text-pastel-blue-border" />
+              </div>
+              <span className="text-xl font-bold text-pastel-blue-border tracking-tightest">BrainBooster</span>
+            </Link>
+
+            <div className="hidden md:flex items-center gap-10">
+              <Link href="#features" className="text-sm font-bold text-pastel-blue-border/70 hover:text-pastel-blue-border tracking-tightest transition-colors">Features</Link>
+              <Link href="#subjects" className="text-sm font-bold text-pastel-blue-border/70 hover:text-pastel-blue-border tracking-tightest transition-colors">Subjects</Link>
+              <Link href="/pricing" className="text-sm font-bold text-pastel-blue-border/70 hover:text-pastel-blue-border tracking-tightest transition-colors">Pricing</Link>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Link href="/auth/login">
+                <Button variant="ghost" size="sm" className="text-pastel-blue-border hover:bg-pastel-blue-border/10">Log In</Button>
+              </Link>
+              <Link href="/pricing">
+                <Button variant="primary" size="sm">Get Started</Button>
+              </Link>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </nav>
+
+      {/* Hero Section - Fixed, scales with scroll */}
+      <div 
+        className="fixed inset-0 flex items-center justify-center z-10"
+        style={{ 
+          opacity: showContent ? 0 : 1,
+          pointerEvents: showContent ? "none" : "auto",
+          transition: "opacity 0.5s ease-out"
+        }}
+      >
+        {/* Central Image that Grows with Scroll */}
+        <div 
+          style={{ 
+            transform: `scale(${imageScale})`,
+            transition: "transform 0.05s linear" // Very responsive to scroll
+          }}
+          className="relative w-[95vw] h-[85vh] max-w-[1400px] rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(123,163,224,0.5)] border-4 border-pastel-blue-border/40"
+        >
+          <Image 
+            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=2070" 
+            alt="Students learning together"
+            fill
+            priority
+            sizes="95vw"
+            className="object-cover"
+          />
+          {/* STRONG blue overlay for text readability */}
+          <div className="absolute inset-0 bg-[#3A6AB8]/70" />
+          
+          {/* Tagline - HIGH CONTRAST TEXT */}
+          <div 
+            style={{ 
+              opacity: taglineOpacity,
+              transition: "opacity 0.3s ease-out"
+            }}
+            className="absolute inset-0 flex flex-col items-center justify-center text-center p-8"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <h1 className="text-5xl md:text-8xl font-bold tracking-tightest leading-none drop-shadow-[0_4px_8px_rgba(0,0,0,0.3)]">
+              <span className="text-white">Master Your</span>
+              <br />
+              <span className="italic-accent text-pastel-cream">Future</span>
+            </h1>
+            <p className="mt-6 text-xl md:text-2xl text-white font-bold tracking-tightest max-w-2xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+              Expert tutoring for Maths & English, designed for clarity and success.
+            </p>
+            <div className="mt-10 flex gap-4">
+              <Link href="/pricing">
+                <Button size="lg" className="bg-white text-pastel-blue-border hover:bg-pastel-cream border-2 border-white font-bold shadow-xl text-lg px-8">
+                  Get Started <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
-      </main>
+
+        {/* Scroll hint - shows when image is small */}
+        <div 
+          style={{ 
+            opacity: scrollHintOpacity,
+            transition: "opacity 0.3s ease-out"
+          }}
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 text-pastel-blue-border flex flex-col items-center gap-3"
+        >
+          <span className="text-xs font-bold uppercase tracking-[0.2em]">Scroll to expand</span>
+          <ChevronDown className="w-6 h-6 animate-bounce" />
+        </div>
+      </div>
+
+      {/* Spacer for when image is fixed */}
+      <div style={{ height: showContent ? "0" : "100vh" }} />
+
+      {/* Main Content - Slides up when image is full */}
+      <div 
+        ref={contentRef}
+        style={{
+          transform: showContent ? "translateY(0)" : "translateY(100vh)",
+          opacity: showContent ? 1 : 0,
+          transition: "transform 0.6s ease-out, opacity 0.4s ease-out"
+        }}
+        className="relative z-20 bg-pastel-blue/30"
+      >
+        {/* Features Section */}
+        <section id="features" className="py-32 px-6 bg-pastel-blue/40">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-20">
+              <Badge variant="primary" className="mb-6 px-4 py-1.5">The BrainBooster Method</Badge>
+              <h2 className="text-4xl md:text-6xl font-bold text-pastel-blue-border mb-8 tracking-tightest">
+                A <span className="italic-accent">Calm</span> Approach to Excellence
+              </h2>
+              <p className="text-xl text-pastel-blue-border/70 max-w-3xl mx-auto tracking-tightest font-bold leading-relaxed">
+                We&apos;ve combined sophisticated technology with elite tutoring to create a learning environment that eliminates stress and maximizes results.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {features.map((item, i) => (
+                <Card key={i} variant="bordered" className="overflow-hidden hover:border-pastel-blue-border transition-all duration-500 group relative">
+                  {/* Card Image */}
+                  <div className="relative h-48 overflow-hidden">
+                    <Image 
+                      src={item.image}
+                      alt={item.title}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-pastel-blue/90 via-pastel-blue/40 to-transparent" />
+                    <div className="absolute bottom-4 left-4 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center border-2 border-pastel-blue-border/30 shadow-lg">
+                      <item.icon className="w-6 h-6 text-pastel-blue-border" />
+                    </div>
+                  </div>
+                  {/* Card Content */}
+                  <div className="p-8">
+                    <h3 className="text-xl font-bold text-pastel-blue-border mb-3 tracking-tightest">{item.title}</h3>
+                    <p className="text-pastel-blue-border/70 leading-relaxed tracking-tightest font-medium text-sm">{item.desc}</p>
+                    <div className="mt-6 flex items-center gap-2 text-sm font-bold text-pastel-blue-border group-hover:gap-4 transition-all duration-300">
+                      Learn more <ArrowRight className="w-4 h-4" />
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Subjects Section */}
+        <section id="subjects" className="py-32 px-6 bg-pastel-cream relative">
+          <div className="max-w-6xl mx-auto relative">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <Badge variant="primary" className="mb-6">Specialized Subjects</Badge>
+                <h2 className="text-5xl font-bold text-pastel-blue-border mb-8 tracking-tightest leading-tight">
+                  Focused on what <span className="italic-accent">really</span> matters.
+                </h2>
+                <p className="text-xl text-pastel-blue-border/70 mb-12 tracking-tightest font-bold leading-relaxed">
+                  We don&apos;t try to teach everything. We specialize in Maths and English because they are the foundation of every student&apos;s future success.
+                </p>
+                <div className="grid sm:grid-cols-2 gap-5">
+                  {levels.map((level) => (
+                    <div key={level} className="flex items-center gap-4 p-4 bg-pastel-blue/40 rounded-2xl border-2 border-pastel-blue-border/20 hover:border-pastel-blue-border/50 transition-colors">
+                      <div className="w-8 h-8 rounded-lg bg-pastel-blue-border/20 border-2 border-pastel-blue-border/40 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-4 h-4 text-pastel-blue-border" />
+                      </div>
+                      <span className="font-bold text-pastel-blue-border tracking-tightest text-sm">{level}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/pricing">
+                  <Button size="lg" className="mt-10 group">
+                    Explore our curriculum <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+              <div className="relative">
+                <div className="absolute -inset-8 bg-pastel-blue-border/20 rounded-[3rem] blur-3xl" />
+                <div className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-pastel-blue-border/30">
+                  <Image 
+                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=1000" 
+                    alt="Learning Environment"
+                    width={1000}
+                    height={700}
+                    className="w-full h-auto"
+                    loading="lazy"
+                  />
+                  <div className="absolute bottom-6 left-6 right-6 p-6 bg-pastel-blue/90 backdrop-blur-md rounded-2xl border-2 border-pastel-blue-border/30">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-pastel-blue-border/20 rounded-xl flex items-center justify-center border-2 border-pastel-blue-border/40">
+                        <GraduationCap className="w-6 h-6 text-pastel-blue-border" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-pastel-blue-border">Expert Tutors Only</p>
+                        <p className="text-xs font-bold text-pastel-blue-border/70">Every session is led by a specialist</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-32 px-6 bg-pastel-blue/50">
+          <div className="max-w-5xl mx-auto">
+            <Card className="p-12 md:p-20 relative overflow-hidden text-center border-4 border-pastel-blue-border">
+              <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-pastel-blue-border/20 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-96 h-96 bg-pastel-blue/40 rounded-full blur-3xl" />
+              
+              <div className="relative z-10">
+                <Badge variant="primary" className="mb-8 px-6 py-2 text-sm">Join the community</Badge>
+                <h2 className="text-5xl md:text-7xl font-bold text-pastel-blue-border mb-8 tracking-tightest leading-tight">
+                  Ready to start your <span className="italic-accent">journey</span>?
+                </h2>
+                <p className="text-xl md:text-2xl text-pastel-blue-border/70 mb-12 tracking-tightest font-bold max-w-2xl mx-auto">
+                  Unlock your full potential with a learning experience designed specifically for you.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-6 justify-center">
+                  <Link href="/pricing">
+                    <Button size="lg" className="h-16 px-12 text-lg">Create Free Account</Button>
+                  </Link>
+                  <Button variant="secondary" size="lg" className="h-16 px-12 text-lg">Talk to an Advisor</Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-20 px-6 border-t-2 border-pastel-blue-border/20 bg-pastel-blue/40">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
+              <div className="max-w-xs">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-10 h-10 bg-pastel-blue-border/20 border-2 border-pastel-blue-border rounded-xl flex items-center justify-center">
+                    <Lock className="w-5 h-5 text-pastel-blue-border" />
+                  </div>
+                  <span className="font-bold text-xl text-pastel-blue-border tracking-tightest">BrainBooster</span>
+                </div>
+                <p className="text-pastel-blue-border/70 font-bold tracking-tightest leading-relaxed">
+                  Elite online tutoring for Maths & English. Redefining how students learn and excel.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-12">
+                <div className="flex flex-col gap-4">
+                  <span className="font-bold text-pastel-blue-border tracking-tightest text-sm uppercase">Platform</span>
+                  <Link href="/dashboard" className="text-sm font-bold text-pastel-blue-border/60 hover:text-pastel-blue-border tracking-tightest transition-colors">Dashboard</Link>
+                  <Link href="/dashboard/live-classes" className="text-sm font-bold text-pastel-blue-border/60 hover:text-pastel-blue-border tracking-tightest transition-colors">Live Classes</Link>
+                  <Link href="/dashboard/recordings" className="text-sm font-bold text-pastel-blue-border/60 hover:text-pastel-blue-border tracking-tightest transition-colors">Recordings</Link>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <span className="font-bold text-pastel-blue-border tracking-tightest text-sm uppercase">Subjects</span>
+                  <Link href="#" className="text-sm font-bold text-pastel-blue-border/60 hover:text-pastel-blue-border tracking-tightest transition-colors">Mathematics</Link>
+                  <Link href="#" className="text-sm font-bold text-pastel-blue-border/60 hover:text-pastel-blue-border tracking-tightest transition-colors">English</Link>
+                  <Link href="#" className="text-sm font-bold text-pastel-blue-border/60 hover:text-pastel-blue-border tracking-tightest transition-colors">Exam Prep</Link>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <span className="font-bold text-pastel-blue-border tracking-tightest text-sm uppercase">Support</span>
+                  <Link href="#" className="text-sm font-bold text-pastel-blue-border/60 hover:text-pastel-blue-border tracking-tightest transition-colors">Contact Us</Link>
+                  <Link href="#" className="text-sm font-bold text-pastel-blue-border/60 hover:text-pastel-blue-border tracking-tightest transition-colors">FAQ</Link>
+                  <Link href="#" className="text-sm font-bold text-pastel-blue-border/60 hover:text-pastel-blue-border tracking-tightest transition-colors">Privacy Policy</Link>
+                </div>
+              </div>
+            </div>
+            <div className="pt-10 border-t-2 border-pastel-blue-border/20 flex flex-col sm:flex-row justify-between items-center gap-6">
+              <p className="text-pastel-blue-border/50 text-xs font-bold tracking-widest uppercase">© 2025 BrainBooster Education. All rights reserved.</p>
+            </div>
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

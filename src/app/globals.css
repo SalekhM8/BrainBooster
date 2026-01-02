@@ -1,26 +1,123 @@
 @import "tailwindcss";
 
+@theme {
+  /* Use CSS variables from next/font for optimal performance */
+  --font-sans: var(--font-inter), "system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif";
+  --font-serif: var(--font-playfair), "Georgia", "serif";
+}
+
+/* PRIMARY: Pastel Blue - use everywhere! */
+/* SECONDARY: Pastel Cream - backgrounds only */
+/* Black/White: Only if absolutely necessary */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* PRIMARY - Pastel Blue Palette */
+  --pastel-blue: #E6F0FF;
+  --pastel-blue-dark: #C9DFFF;
+  --pastel-blue-border: #7BA3E0;
+  --pastel-blue-text: #4A7BC7;
+  
+  /* SECONDARY - Cream (for backgrounds) */
+  --pastel-cream: #FFFDF5;
+  
+  /* System */
+  --background: var(--pastel-blue);
+  --surface: var(--pastel-cream);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Performance: GPU-accelerated smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
+  font-family: var(--font-sans);
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--pastel-blue-text);
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+}
+
+/* Performance: GPU layers for animations */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Mix of italic and normal fonts */
+h1, h2, h3, .tagline {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--pastel-blue-border);
+}
+
+.italic-accent {
+  font-style: italic;
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Performance: Optimized scrollbar - PASTEL BLUE */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--pastel-blue);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pastel-blue-border);
+  border-radius: 10px;
+  border: 3px solid var(--pastel-blue);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pastel-blue-text);
+}
+
+/* Preply style button base */
+.btn-preply {
+  border-width: 2px;
+  border-style: solid;
+  transition: transform 0.1s cubic-bezier(0, 0, 0.2, 1);
+  position: relative;
+}
+
+.btn-preply:active {
+  transform: translateY(2px);
+}
+
+/* Glassmorphism utility - PASTEL BLUE */
+.glass {
+  background: rgba(230, 240, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(123, 163, 224, 0.3);
+}
+
+/* Performance: Contain paint for complex sections */
+.contain-paint {
+  contain: paint;
+}
+
+/* Performance: Content visibility for off-screen content */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

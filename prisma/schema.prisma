@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id                   String               @id @default(cuid())
+  email                String               @unique
+  password             String
+  firstName            String
+  lastName             String
+  role                 String               @default("STUDENT") // STUDENT, TEACHER, ADMIN
+  avatar               String?
+  isActive             Boolean              @default(true)
+  subjects             String?              // JSON string of subjects
+  yearGroup            String?              // KS3, KS4, GCSE, A_LEVEL
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  subscription         Subscription?
+  sessions             Session[]            @relation("TeacherSessions")
+  recordings           Recording[]
+  recordingViews       RecordingView[]
+  notifications        Notification[]
+  passwordResetTokens  PasswordResetToken[]
+
+  @@index([email])
+  @@index([role])
+}
+
+// Subscription model
+model Subscription {
+  id                    String    @id @default(cuid())
+  userId                String    @unique
+  stripeCustomerId      String?   @unique
+  stripeSubscriptionId  String?   @unique
+  stripePriceId         String?
+  tier                  String    @default("BASIC") // BASIC, PREMIUM
+  status                String    @default("ACTIVE") // ACTIVE, CANCELLED, EXPIRED, PAST_DUE
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean   @default(false)
+  homeworkSiteAccess    Boolean   @default(false)
+  homeworkSiteUrl       String?
+  homeworkUsername      String?
+  homeworkPassword      String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+}
+
+// Session (Live Class) model
+model Session {
+  id              String      @id @default(cuid())
+  title           String
+  description     String?
+  subject         String      // MATHS, ENGLISH
+  yearGroup       String      // KS3, KS4, GCSE, A_LEVEL
+  scheduledAt     DateTime
+  duration        Int         @default(60) // minutes
+  meetingLink     String?
+  meetingPassword String?
+  isLive          Boolean     @default(false)
+  isCancelled     Boolean     @default(false)
+  teacherId       String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  teacher         User        @relation("TeacherSessions", fields: [teacherId], references: [id])
+  recording       Recording?
+
+  @@index([teacherId])
+  @@index([subject])
+  @@index([yearGroup])
+  @@index([scheduledAt])
+}
+
+// Recording model
+model Recording {
+  id           String          @id @default(cuid())
+  title        String
+  description  String?
+  subject      String          // MATHS, ENGLISH
+  yearGroup    String          // KS3, KS4, GCSE, A_LEVEL
+  videoUrl     String
+  thumbnailUrl String?
+  duration     Int?            // seconds
+  sessionId    String?         @unique
+  teacherId    String
+  viewCount    Int             @default(0)
+  isPublished  Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  session      Session?        @relation(fields: [sessionId], references: [id])
+  teacher      User            @relation(fields: [teacherId], references: [id])
+  views        RecordingView[]
+
+  @@index([teacherId])
+  @@index([subject])
+  @@index([yearGroup])
+}
+
+// Recording View tracking
+model RecordingView {
+  id          String    @id @default(cuid())
+  recordingId String
+  userId      String
+  watchedAt   DateTime  @default(now())
+  progress    Int       @default(0) // percentage
+  recording   Recording @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([recordingId, userId])
+  @@index([recordingId])
+  @@index([userId])
+}
+
+// Pricing Plan model
+model PricingPlan {
+  id                   String   @id @default(cuid())
+  name                 String
+  description          String?
+  tier                 String   // BASIC, PREMIUM
+  priceMonthly         Int      // in pence
+  priceYearly          Int?     // in pence
+  features             String   // JSON string
+  subjects             String   // JSON string of subjects
+  isPopular            Boolean  @default(false)
+  isActive             Boolean  @default(true)
+  sortOrder            Int      @default(0)
+  stripePriceIdMonthly String?
+  stripePriceIdYearly  String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([tier])
+}
+
+// Notification model
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+// Password Reset Token model
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
