@@ -152,14 +152,14 @@ async function main() {
   ];
 
   const recordings = await Promise.all(
-    recordingData.map((r) =>
+    recordingData.map((r, index) =>
       prisma.recording.create({
         data: {
           title: r.title,
           description: `Complete guide to ${r.title.toLowerCase()}.`,
           subject: r.subject,
           yearGroup: r.yearGroup,
-          videoUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+          videoUrl: `https://zoom.us/rec/share/recording-${index + 1}-${r.subject.toLowerCase()}`,
           thumbnailUrl: null,
           duration: r.duration,
           teacherId: r.teacher.id,
