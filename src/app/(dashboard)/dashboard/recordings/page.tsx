@@ -108,11 +108,16 @@ const RecordingCard = memo(function RecordingCard({
         <p className="text-sm text-slate-500">
           {recording.teacher?.firstName} {recording.teacher?.lastName}
         </p>
-        <Link href={`/dashboard/recordings/${recording.id}`} className="block mt-3">
+        <a 
+          href={recording.videoUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="block mt-3"
+        >
           <Button size="sm" className="w-full">
             Watch
           </Button>
-        </Link>
+        </a>
       </div>
     </Card>
   );

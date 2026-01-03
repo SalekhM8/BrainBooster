@@ -38,6 +38,7 @@ interface DashboardData {
     subject: string;
     duration: number | null;
     createdAt: string;
+    videoUrl: string;
   }>;
 }
 
@@ -99,7 +100,7 @@ const RecordingItem = memo(function RecordingItem({
     : "";
 
   return (
-    <Link href={`/dashboard/recordings/${recording.id}`}>
+    <a href={recording.videoUrl} target="_blank" rel="noopener noreferrer">
       <div className="flex items-center justify-between p-3 sm:p-5 bg-white/40 border-2 border-transparent hover:border-pastel-blue-border/30 hover:bg-white rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-300 group">
         <div className="flex items-center gap-3 sm:gap-5">
           <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pastel-blue/30 border-2 border-pastel-blue-border/10 rounded-lg sm:rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:bg-pastel-blue transition-all duration-300">
@@ -118,7 +119,7 @@ const RecordingItem = memo(function RecordingItem({
           {recording.subject === "MATHS" ? "Maths" : "English"}
         </Badge>
       </div>
-    </Link>
+    </a>
   );
 });
 

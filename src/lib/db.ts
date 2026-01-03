@@ -79,4 +79,5 @@ export const recordingSelectMinimal = {
   subject: true,
   duration: true,
   createdAt: true,
+  videoUrl: true,
 } as const;
