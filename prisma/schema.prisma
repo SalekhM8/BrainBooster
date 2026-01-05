@@ -138,8 +138,9 @@ model PricingPlan {
   isPopular            Boolean  @default(false)
   isActive             Boolean  @default(true)
   sortOrder            Int      @default(0)
-  stripePriceIdMonthly String?
-  stripePriceIdYearly  String?
+  stripeProductId      String?  // Stripe Product ID
+  stripePriceIdMonthly String?  // Stripe Price ID for monthly
+  stripePriceIdYearly  String?  // Stripe Price ID for yearly
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 

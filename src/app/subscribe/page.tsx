@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
@@ -19,15 +19,14 @@ interface PricingPlan {
   priceMonthly: number;
   priceYearly: number | null;
   features: string[];
+  subjects: string[];
   stripePriceIdMonthly: string | null;
   stripePriceIdYearly: string | null;
 }
 
 function SubscribeForm() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const planId = searchParams.get("plan");
-  const subjectParam = searchParams.get("subject") || "BOTH";
 
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
   const [isLoading, setIsLoading] = useState(false);
@@ -48,20 +47,13 @@ function SubscribeForm() {
     fetcher
   );
 
-  // Determine subjects based on selection
-  const subjects = subjectParam === "BOTH" 
-    ? ["MATHS", "ENGLISH"] 
-    : [subjectParam];
-
-  // Calculate price
+  // Simple price calculation - no multipliers, just the plan price
   const getPrice = () => {
     if (!plan) return 0;
-    const basePrice = billingInterval === "yearly" 
+    const price = billingInterval === "yearly" 
       ? (plan.priceYearly || plan.priceMonthly * 12) 
       : plan.priceMonthly;
-    // Add 50% for both subjects
-    const multiplier = subjectParam === "BOTH" ? 1.5 : 1;
-    return Math.round((basePrice / 100) * multiplier);
+    return Math.round(price / 100);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,7 +85,6 @@ function SubscribeForm() {
           firstName: form.firstName,
           lastName: form.lastName,
           yearGroup: form.yearGroup,
-          subjects,
         }),
       });
 
@@ -170,8 +161,9 @@ function SubscribeForm() {
                 )}
               </div>
 
+              {/* Show subjects included in plan */}
               <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-                {subjects.map((subject) => (
+                {plan.subjects?.map((subject: string) => (
                   <Badge key={subject} variant={subject === "MATHS" ? "primary" : "warning"} className="text-xs">
                     {subject === "MATHS" ? "Maths" : "English"}
                   </Badge>

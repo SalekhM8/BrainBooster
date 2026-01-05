@@ -14,7 +14,6 @@ export async function POST(request: NextRequest) {
       firstName,
       lastName,
       yearGroup,
-      subjects,
     } = body;
 
     // Validate required fields
@@ -90,7 +89,7 @@ export async function POST(request: NextRequest) {
         firstName,
         lastName,
         yearGroup: yearGroup || "",
-        subjects: JSON.stringify(subjects || []),
+        subjects: plan.subjects, // Use subjects from the plan
         hashedPassword,
       },
       success_url: `${appUrl}/auth/success?session_id={CHECKOUT_SESSION_ID}`,

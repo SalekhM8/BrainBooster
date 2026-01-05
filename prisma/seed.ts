@@ -172,7 +172,8 @@ async function main() {
   console.log(`✅ ${recordings.length} Recordings created`);
 
   // ==================== PRICING PLANS ====================
-  // NOTE: Update stripePriceIdMonthly/Yearly with real Stripe Price IDs after creating them
+  // NOTE: After seeding, go to Admin > Pricing and click "Sync" on each plan
+  // to auto-create Stripe products and prices
   await prisma.pricingPlan.createMany({
     data: [
       {
@@ -192,8 +193,7 @@ async function main() {
         isPopular: false,
         isActive: true,
         sortOrder: 1,
-        stripePriceIdMonthly: null, // Set after creating Stripe products
-        stripePriceIdYearly: null,
+        // Stripe IDs will be auto-created when you click "Sync" in admin
       },
       {
         name: "Premium",
@@ -213,12 +213,11 @@ async function main() {
         isPopular: true,
         isActive: true,
         sortOrder: 2,
-        stripePriceIdMonthly: null,
-        stripePriceIdYearly: null,
+        // Stripe IDs will be auto-created when you click "Sync" in admin
       },
     ],
   });
-  console.log("✅ Pricing plans created");
+  console.log("✅ Pricing plans created (Remember to sync with Stripe in admin!)");
 
   // ==================== NOTIFICATIONS ====================
   await prisma.notification.createMany({

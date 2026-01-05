@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession, hashPassword } from "@/lib/auth";
+import { getStripe } from "@/lib/stripe";
 
 // GET /api/users/[id]
 export async function GET(
@@ -92,6 +93,53 @@ export async function PUT(
 
     // Update subscription/homework credentials if provided
     if (body.subscription && user.subscription) {
+      const currentTier = user.subscription.tier;
+      const newTier = body.subscription.tier;
+      
+      // If tier is changing and user has a Stripe subscription, update Stripe
+      if (newTier && newTier !== currentTier && user.subscription.stripeSubscriptionId) {
+        try {
+          const stripe = getStripe();
+          
+          // Get the pricing plan for the new tier
+          const newPlan = await db.pricingPlan.findFirst({
+            where: { tier: newTier, isActive: true },
+          });
+          
+          if (newPlan && newPlan.stripePriceIdMonthly) {
+            // Get the current subscription from Stripe
+            const stripeSubscription = await stripe.subscriptions.retrieve(
+              user.subscription.stripeSubscriptionId
+            );
+            
+            // Update the subscription to the new price
+            // This will prorate automatically
+            await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+              items: [
+                {
+                  id: stripeSubscription.items.data[0].id,
+                  price: newPlan.stripePriceIdMonthly,
+                },
+              ],
+              proration_behavior: "create_prorations", // Charge/credit the difference
+            });
+            
+            // Update the stored price ID
+            await db.subscription.update({
+              where: { userId: id },
+              data: {
+                stripePriceId: newPlan.stripePriceIdMonthly,
+              },
+            });
+          }
+        } catch (stripeError) {
+          console.error("Error updating Stripe subscription:", stripeError);
+          // Continue with database update even if Stripe fails
+          // Admin can manually fix if needed
+        }
+      }
+      
+      // Update local subscription data
       await db.subscription.update({
         where: { userId: id },
         data: {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { getStripe } from "@/lib/stripe";
 
 // GET /api/pricing-plans - Get all pricing plans (public for pricing page)
 export async function GET(request: NextRequest) {
@@ -29,6 +30,48 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Helper to create Stripe product and prices
+async function createStripeProductAndPrices(
+  name: string,
+  description: string | null,
+  priceMonthlyPence: number,
+  priceYearlyPence: number | null
+): Promise<{ productId: string; monthlyPriceId: string; yearlyPriceId: string | null }> {
+  const stripe = getStripe();
+
+  // Create Stripe product
+  const product = await stripe.products.create({
+    name: `BrainBooster - ${name}`,
+    description: description || `${name} subscription plan`,
+  });
+
+  // Create monthly price
+  const monthlyPrice = await stripe.prices.create({
+    product: product.id,
+    unit_amount: priceMonthlyPence,
+    currency: "gbp",
+    recurring: { interval: "month" },
+  });
+
+  // Create yearly price if provided
+  let yearlyPriceId: string | null = null;
+  if (priceYearlyPence) {
+    const yearlyPrice = await stripe.prices.create({
+      product: product.id,
+      unit_amount: priceYearlyPence,
+      currency: "gbp",
+      recurring: { interval: "year" },
+    });
+    yearlyPriceId = yearlyPrice.id;
+  }
+
+  return {
+    productId: product.id,
+    monthlyPriceId: monthlyPrice.id,
+    yearlyPriceId,
+  };
+}
+
 // POST /api/pricing-plans - Create a new pricing plan (Admin only)
 export async function POST(request: NextRequest) {
   try {
@@ -51,18 +94,32 @@ export async function POST(request: NextRequest) {
       sortOrder,
     } = body;
 
+    const priceMonthlyPence = Math.round(priceMonthly * 100);
+    const priceYearlyPence = priceYearly ? Math.round(priceYearly * 100) : null;
+
+    // Automatically create Stripe product and prices
+    const { productId, monthlyPriceId, yearlyPriceId } = await createStripeProductAndPrices(
+      name,
+      description,
+      priceMonthlyPence,
+      priceYearlyPence
+    );
+
     const plan = await db.pricingPlan.create({
       data: {
         name,
         description,
         tier,
-        priceMonthly: Math.round(priceMonthly * 100), // Convert to pence
-        priceYearly: priceYearly ? Math.round(priceYearly * 100) : null,
+        priceMonthly: priceMonthlyPence,
+        priceYearly: priceYearlyPence,
         features: JSON.stringify(features || []),
         subjects: JSON.stringify(subjects || []),
         isPopular: isPopular || false,
         isActive: isActive !== false,
         sortOrder: sortOrder || 0,
+        stripeProductId: productId,
+        stripePriceIdMonthly: monthlyPriceId,
+        stripePriceIdYearly: yearlyPriceId,
       },
     });
 

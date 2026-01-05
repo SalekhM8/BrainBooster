@@ -82,6 +82,13 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   });
 
   if (existingUser) {
+    // Get the price ID from the Stripe subscription
+    let stripePriceId: string | null = null;
+    if (session.subscription) {
+      const stripeSubscription = await getStripe().subscriptions.retrieve(session.subscription as string);
+      stripePriceId = stripeSubscription.items.data[0]?.price?.id || null;
+    }
+    
     // Update existing user's subscription
     await db.subscription.upsert({
       where: { userId: existingUser.id },
@@ -91,6 +98,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         status: "ACTIVE",
         stripeCustomerId: session.customer as string,
         stripeSubscriptionId: session.subscription as string,
+        stripePriceId,
         currentPeriodStart: new Date(),
         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         homeworkSiteAccess: metadata.planTier === "PREMIUM",
@@ -100,6 +108,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         status: "ACTIVE",
         stripeCustomerId: session.customer as string,
         stripeSubscriptionId: session.subscription as string,
+        stripePriceId,
         currentPeriodStart: new Date(),
         currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         homeworkSiteAccess: metadata.planTier === "PREMIUM",
@@ -118,6 +127,13 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
 
   const subjects = metadata.subjects ? JSON.parse(metadata.subjects) : ["MATHS", "ENGLISH"];
 
+  // Get the price ID from the Stripe subscription
+  let newUserStripePriceId: string | null = null;
+  if (session.subscription) {
+    const stripeSubscription = await getStripe().subscriptions.retrieve(session.subscription as string);
+    newUserStripePriceId = stripeSubscription.items.data[0]?.price?.id || null;
+  }
+
   const user = await db.user.create({
     data: {
       email,
@@ -134,6 +150,7 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
           status: "ACTIVE",
           stripeCustomerId: session.customer as string,
           stripeSubscriptionId: session.subscription as string,
+          stripePriceId: newUserStripePriceId,
           currentPeriodStart: new Date(),
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           homeworkSiteAccess: metadata.planTier === "PREMIUM",
@@ -188,16 +205,45 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       status = "ACTIVE";
   }
 
+  // Get the current price ID from the subscription
+  const currentPriceId = subscription.items.data[0]?.price?.id;
+  
+  // Try to determine the tier from the price ID
+  let tier = dbSubscription.tier;
+  let homeworkSiteAccess = dbSubscription.homeworkSiteAccess;
+  
+  if (currentPriceId) {
+    // Find the plan that matches this price ID
+    const matchingPlan = await db.pricingPlan.findFirst({
+      where: {
+        OR: [
+          { stripePriceIdMonthly: currentPriceId },
+          { stripePriceIdYearly: currentPriceId },
+        ],
+      },
+    });
+    
+    if (matchingPlan) {
+      tier = matchingPlan.tier;
+      homeworkSiteAccess = matchingPlan.tier === "PREMIUM";
+    }
+  }
+
   // Update subscription - use type assertion for Stripe API compatibility
   const subData = subscription as unknown as { current_period_start: number; current_period_end: number };
   await db.subscription.update({
     where: { id: dbSubscription.id },
     data: {
       status,
+      tier,
+      homeworkSiteAccess,
+      stripePriceId: currentPriceId || dbSubscription.stripePriceId,
       currentPeriodStart: new Date(subData.current_period_start * 1000),
       currentPeriodEnd: new Date(subData.current_period_end * 1000),
     },
   });
+  
+  console.log(`Subscription updated: ${stripeSubscriptionId} - tier: ${tier}, status: ${status}`);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {

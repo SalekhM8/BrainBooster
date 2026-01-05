@@ -18,6 +18,7 @@ interface Subscription {
   homeworkUsername: string | null;
   homeworkPassword: string | null;
   currentPeriodEnd: string | null;
+  stripeSubscriptionId: string | null;
 }
 
 interface User {
@@ -290,6 +291,16 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
         <Card variant="bordered" className="p-6">
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Subscription</h2>
           <div className="space-y-4">
+            {/* Warning about billing changes */}
+            {form.tier !== user.subscription.tier && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-700 font-medium">⚠️ Billing will be updated</p>
+                <p className="text-xs text-amber-600 mt-1">
+                  Changing the tier will update their Stripe subscription. They will be charged/credited the prorated difference.
+                </p>
+              </div>
+            )}
+            
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Tier</label>
@@ -323,6 +334,13 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
                 </select>
               </div>
             </div>
+            
+            {/* Show Stripe connection status */}
+            {user.subscription.stripeSubscriptionId ? (
+              <p className="text-xs text-emerald-600">✓ Connected to Stripe billing</p>
+            ) : (
+              <p className="text-xs text-slate-400">Manual subscription (no Stripe billing)</p>
+            )}
           </div>
         </Card>
       )}

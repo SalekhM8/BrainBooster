@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
+import { getStripe } from "@/lib/stripe";
 
 // GET /api/pricing-plans/[id] - Get a single pricing plan
 export async function GET(
@@ -29,6 +30,75 @@ export async function GET(
   }
 }
 
+// Helper to create or update Stripe prices
+async function updateStripePrices(
+  existingProductId: string | null,
+  name: string,
+  description: string | null,
+  priceMonthlyPence: number,
+  priceYearlyPence: number | null,
+  oldMonthlyPriceId: string | null,
+  oldYearlyPriceId: string | null,
+  priceChanged: boolean
+): Promise<{ productId: string; monthlyPriceId: string; yearlyPriceId: string | null }> {
+  const stripe = getStripe();
+
+  let productId = existingProductId;
+
+  // Create product if it doesn't exist
+  if (!productId) {
+    const product = await stripe.products.create({
+      name: `BrainBooster - ${name}`,
+      description: description || `${name} subscription plan`,
+    });
+    productId = product.id;
+  } else {
+    // Update product name/description
+    await stripe.products.update(productId, {
+      name: `BrainBooster - ${name}`,
+      description: description || `${name} subscription plan`,
+    });
+  }
+
+  let monthlyPriceId = oldMonthlyPriceId;
+  let yearlyPriceId = oldYearlyPriceId;
+
+  // If price changed or no price exists, create new prices
+  if (priceChanged || !monthlyPriceId) {
+    // Archive old prices if they exist
+    if (oldMonthlyPriceId) {
+      await stripe.prices.update(oldMonthlyPriceId, { active: false });
+    }
+    if (oldYearlyPriceId) {
+      await stripe.prices.update(oldYearlyPriceId, { active: false });
+    }
+
+    // Create new monthly price
+    const newMonthlyPrice = await stripe.prices.create({
+      product: productId,
+      unit_amount: priceMonthlyPence,
+      currency: "gbp",
+      recurring: { interval: "month" },
+    });
+    monthlyPriceId = newMonthlyPrice.id;
+
+    // Create new yearly price if provided
+    if (priceYearlyPence) {
+      const newYearlyPrice = await stripe.prices.create({
+        product: productId,
+        unit_amount: priceYearlyPence,
+        currency: "gbp",
+        recurring: { interval: "year" },
+      });
+      yearlyPriceId = newYearlyPrice.id;
+    } else {
+      yearlyPriceId = null;
+    }
+  }
+
+  return { productId, monthlyPriceId: monthlyPriceId!, yearlyPriceId };
+}
+
 // PUT /api/pricing-plans/[id] - Update a pricing plan (Admin only)
 export async function PUT(
   request: NextRequest,
@@ -53,24 +123,53 @@ export async function PUT(
       isPopular,
       isActive,
       sortOrder,
-      stripePriceIdMonthly,
-      stripePriceIdYearly,
     } = body;
+
+    // Get existing plan to check for price changes
+    const existingPlan = await db.pricingPlan.findUnique({ where: { id } });
+    if (!existingPlan) {
+      return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+    }
 
     const updateData: Record<string, unknown> = {};
 
     if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (tier !== undefined) updateData.tier = tier;
-    if (priceMonthly !== undefined) updateData.priceMonthly = Math.round(priceMonthly * 100);
-    if (priceYearly !== undefined) updateData.priceYearly = priceYearly ? Math.round(priceYearly * 100) : null;
     if (features !== undefined) updateData.features = JSON.stringify(features);
     if (subjects !== undefined) updateData.subjects = JSON.stringify(subjects);
     if (isPopular !== undefined) updateData.isPopular = isPopular;
     if (isActive !== undefined) updateData.isActive = isActive;
     if (sortOrder !== undefined) updateData.sortOrder = sortOrder;
-    if (stripePriceIdMonthly !== undefined) updateData.stripePriceIdMonthly = stripePriceIdMonthly;
-    if (stripePriceIdYearly !== undefined) updateData.stripePriceIdYearly = stripePriceIdYearly;
+
+    // Handle price changes - auto-create new Stripe prices
+    const newPriceMonthlyPence = priceMonthly !== undefined ? Math.round(priceMonthly * 100) : existingPlan.priceMonthly;
+    const newPriceYearlyPence = priceYearly !== undefined ? (priceYearly ? Math.round(priceYearly * 100) : null) : existingPlan.priceYearly;
+
+    const priceChanged = 
+      newPriceMonthlyPence !== existingPlan.priceMonthly ||
+      newPriceYearlyPence !== existingPlan.priceYearly;
+
+    // Only interact with Stripe if prices changed OR if we don't have Stripe IDs
+    if (priceChanged || !existingPlan.stripePriceIdMonthly) {
+      const { productId, monthlyPriceId, yearlyPriceId } = await updateStripePrices(
+        existingPlan.stripeProductId,
+        name || existingPlan.name,
+        description !== undefined ? description : existingPlan.description,
+        newPriceMonthlyPence,
+        newPriceYearlyPence,
+        existingPlan.stripePriceIdMonthly,
+        existingPlan.stripePriceIdYearly,
+        priceChanged
+      );
+
+      updateData.stripeProductId = productId;
+      updateData.stripePriceIdMonthly = monthlyPriceId;
+      updateData.stripePriceIdYearly = yearlyPriceId;
+    }
+
+    if (priceMonthly !== undefined) updateData.priceMonthly = newPriceMonthlyPence;
+    if (priceYearly !== undefined) updateData.priceYearly = newPriceYearlyPence;
 
     const plan = await db.pricingPlan.update({
       where: { id },

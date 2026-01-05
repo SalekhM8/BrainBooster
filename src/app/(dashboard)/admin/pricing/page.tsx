@@ -21,6 +21,7 @@ interface PricingPlan {
   isPopular: boolean;
   isActive: boolean;
   sortOrder: number;
+  stripeProductId: string | null;
   stripePriceIdMonthly: string | null;
   stripePriceIdYearly: string | null;
 }
@@ -30,11 +31,13 @@ const PlanRow = memo(function PlanRow({
   onEdit,
   onToggle,
   onDelete,
+  onSync,
 }: {
   plan: PricingPlan;
   onEdit: (plan: PricingPlan) => void;
   onToggle: (id: string, isActive: boolean) => void;
   onDelete: (id: string) => void;
+  onSync: (plan: PricingPlan) => void;
 }) {
   return (
     <tr className="hover:bg-slate-50 transition-colors">
@@ -68,7 +71,12 @@ const PlanRow = memo(function PlanRow({
         {plan.stripePriceIdMonthly ? (
           <Badge variant="success">Connected</Badge>
         ) : (
-          <Badge variant="warning">Not Set</Badge>
+          <button 
+            onClick={() => onSync(plan)}
+            className="text-amber-600 hover:text-amber-700 text-xs font-medium underline"
+          >
+            Click to Sync
+          </button>
         )}
       </td>
       <td className="px-4 py-4 text-right">
@@ -102,8 +110,6 @@ export default function AdminPricingPage() {
     isPopular: false,
     isActive: true,
     sortOrder: 0,
-    stripePriceIdMonthly: "",
-    stripePriceIdYearly: "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -122,8 +128,6 @@ export default function AdminPricingPage() {
       isPopular: false,
       isActive: true,
       sortOrder: (plans?.length || 0) + 1,
-      stripePriceIdMonthly: "",
-      stripePriceIdYearly: "",
     });
     setShowModal(true);
   };
@@ -141,8 +145,6 @@ export default function AdminPricingPage() {
       isPopular: plan.isPopular,
       isActive: plan.isActive,
       sortOrder: plan.sortOrder,
-      stripePriceIdMonthly: plan.stripePriceIdMonthly || "",
-      stripePriceIdYearly: plan.stripePriceIdYearly || "",
     });
     setShowModal(true);
   };
@@ -161,8 +163,7 @@ export default function AdminPricingPage() {
         isPopular: formData.isPopular,
         isActive: formData.isActive,
         sortOrder: formData.sortOrder,
-        stripePriceIdMonthly: formData.stripePriceIdMonthly || null,
-        stripePriceIdYearly: formData.stripePriceIdYearly || null,
+        // Stripe prices are auto-created - no manual input needed
       };
 
       if (editingPlan) {
@@ -203,6 +204,29 @@ export default function AdminPricingPage() {
     if (!confirm("Are you sure you want to delete this pricing plan?")) return;
     await fetch(`/api/pricing-plans/${id}`, { method: "DELETE" });
     await mutate(undefined, { revalidate: true });
+  }, [mutate]);
+
+  // Sync a plan with Stripe (creates/updates Stripe product and prices)
+  const handleSyncWithStripe = useCallback(async (plan: PricingPlan) => {
+    if (!confirm(`Sync "${plan.name}" with Stripe? This will create Stripe products and prices.`)) return;
+    
+    try {
+      await fetch(`/api/pricing-plans/${plan.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: plan.name,
+          description: plan.description,
+          priceMonthly: plan.priceMonthly / 100,
+          priceYearly: plan.priceYearly ? plan.priceYearly / 100 : null,
+        }),
+      });
+      await mutate(undefined, { revalidate: true });
+      alert("Successfully synced with Stripe!");
+    } catch (error) {
+      console.error("Error syncing with Stripe:", error);
+      alert("Failed to sync with Stripe");
+    }
   }, [mutate]);
 
   return (
@@ -250,6 +274,7 @@ export default function AdminPricingPage() {
                     onEdit={openEditModal}
                     onToggle={handleToggle}
                     onDelete={handleDelete}
+                    onSync={handleSyncWithStripe}
                   />
                 ))}
               </tbody>
@@ -359,20 +384,23 @@ export default function AdminPricingPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  label="Stripe Price ID (Monthly)"
-                  value={formData.stripePriceIdMonthly}
-                  onChange={(e) => setFormData({ ...formData, stripePriceIdMonthly: e.target.value })}
-                  placeholder="price_xxx..."
-                />
-                <Input
-                  label="Stripe Price ID (Yearly)"
-                  value={formData.stripePriceIdYearly}
-                  onChange={(e) => setFormData({ ...formData, stripePriceIdYearly: e.target.value })}
-                  placeholder="price_xxx..."
-                />
-              </div>
+              {/* Stripe prices are auto-created when you save */}
+              {editingPlan && editingPlan.stripePriceIdMonthly && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <p className="text-sm text-emerald-700 font-medium">✓ Stripe Connected</p>
+                  <p className="text-xs text-emerald-600 mt-1">
+                    Prices sync automatically. Changing prices here will create new Stripe prices for new subscribers.
+                  </p>
+                </div>
+              )}
+              {editingPlan && !editingPlan.stripePriceIdMonthly && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <p className="text-sm text-amber-700 font-medium">⚠ Not connected to Stripe</p>
+                  <p className="text-xs text-amber-600 mt-1">
+                    Save this plan to auto-create Stripe products and prices.
+                  </p>
+                </div>
+              )}
 
               <div className="flex gap-6">
                 <label className="flex items-center gap-2">
