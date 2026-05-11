@@ -14,6 +14,7 @@ import {
   FileVideo,
   GraduationCap,
   ClipboardList,
+  Inbox,
 } from "lucide-react";
 
 // Student navigation
@@ -131,6 +132,11 @@ export const adminNavigation: NavSection[] = [
   {
     title: "Management",
     items: [
+      {
+        title: "Trial Bookings",
+        href: "/admin/trials",
+        icon: Inbox,
+      },
       {
         title: "Users",
         href: "/admin/users",

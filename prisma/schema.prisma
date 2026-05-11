@@ -164,6 +164,27 @@ model Notification {
   @@index([isRead])
 }
 
+// Trial Booking model — captures parent enquiries from the public landing page
+model TrialBooking {
+  id                String   @id @default(cuid())
+  parentName        String
+  parentEmail       String
+  parentPhone       String?
+  childFirstName    String
+  childYearGroup    String   // KS3, KS4, GCSE, A_LEVEL
+  subject           String   // MATHS, ENGLISH, BOTH
+  preferredTime     String?  // free text e.g. "weekday evenings"
+  notes             String?
+  assignedSessionId String?  // optional FK string to a Session.id (admin assigns)
+  status            String   @default("PENDING") // PENDING, CONFIRMED, ATTENDED, CONVERTED, DECLINED, NO_SHOW
+  source            String   @default("LANDING") // LANDING, FOOTER, REFERRAL, OTHER
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+
 // Password Reset Token model
 model PasswordResetToken {
   id        String   @id @default(cuid())
