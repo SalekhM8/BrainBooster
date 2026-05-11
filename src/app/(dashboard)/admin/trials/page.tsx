@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/ui/pagination";
 import { TableSkeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 import { fetcher, buildUrl } from "@/lib/fetcher";
 
 interface TrialBooking {
@@ -337,23 +338,42 @@ export default function AdminTrialsPage() {
               </div>
             </div>
 
-            <div className="mt-8 flex gap-3 border-t border-slate-200 pt-6">
-              <a
-                href={`mailto:${selected.parentEmail}?subject=${encodeURIComponent("Your BrainBooster trial")}`}
-                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
+            <div className="mt-8 space-y-3 border-t border-slate-200 pt-6">
+              <Link
+                href={{
+                  pathname: "/admin/users/new",
+                  query: {
+                    fromTrial: selected.id,
+                    firstName: selected.childFirstName,
+                    yearGroup: selected.childYearGroup,
+                    subject: selected.subject,
+                    parentName: selected.parentName,
+                    parentEmail: selected.parentEmail,
+                    parentPhone: selected.parentPhone ?? "",
+                  },
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-indigo-700"
               >
-                Email parent
-              </a>
-              {selected.parentPhone && (
+                Create student account →
+              </Link>
+              <div className="flex gap-3">
                 <a
-                  href={`https://wa.me/${selected.parentPhone.replace(/\D/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 rounded-lg bg-[#25D366] px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-[#1faa55]"
+                  href={`mailto:${selected.parentEmail}?subject=${encodeURIComponent("Your BrainBooster trial")}`}
+                  className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-center text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
-                  WhatsApp
+                  Email parent
                 </a>
-              )}
+                {selected.parentPhone && (
+                  <a
+                    href={`https://wa.me/${selected.parentPhone.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 rounded-lg bg-[#25D366] px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-[#1faa55]"
+                  >
+                    WhatsApp
+                  </a>
+                )}
+              </div>
             </div>
           </div>
         </div>

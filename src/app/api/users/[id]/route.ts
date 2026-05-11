@@ -26,6 +26,9 @@ export async function GET(
         isActive: true,
         subjects: true,
         yearGroup: true,
+        parentName: true,
+        parentEmail: true,
+        parentPhone: true,
         createdAt: true,
         subscription: true,
       },
@@ -64,6 +67,10 @@ export async function PUT(
     if (body.role !== undefined) updateData.role = body.role;
     if (body.isActive !== undefined) updateData.isActive = body.isActive;
     if (body.yearGroup !== undefined) updateData.yearGroup = body.yearGroup;
+    if (body.parentName !== undefined) updateData.parentName = body.parentName?.trim() || null;
+    if (body.parentEmail !== undefined)
+      updateData.parentEmail = body.parentEmail?.trim().toLowerCase() || null;
+    if (body.parentPhone !== undefined) updateData.parentPhone = body.parentPhone?.trim() || null;
 
     if (body.subjects) {
       updateData.subjects = JSON.stringify(body.subjects);
@@ -86,6 +93,9 @@ export async function PUT(
         isActive: true,
         subjects: true,
         yearGroup: true,
+        parentName: true,
+        parentEmail: true,
+        parentPhone: true,
         createdAt: true,
         subscription: true,
       },
@@ -165,6 +175,9 @@ export async function PUT(
         isActive: true,
         subjects: true,
         yearGroup: true,
+        parentName: true,
+        parentEmail: true,
+        parentPhone: true,
         createdAt: true,
         subscription: true,
       },

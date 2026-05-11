@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function NewUserPage() {
+function NewUserForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromTrial = searchParams.get("fromTrial");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -19,7 +21,34 @@ export default function NewUserPage() {
     role: "STUDENT",
     yearGroup: "GCSE",
     subjects: ["MATHS", "ENGLISH"],
+    parentName: "",
+    parentEmail: "",
+    parentPhone: "",
   });
+
+  // Prefill from trial booking query params
+  useEffect(() => {
+    if (!fromTrial) return;
+    const firstName = searchParams.get("firstName") || "";
+    const yearGroup = searchParams.get("yearGroup") || "GCSE";
+    const subject = searchParams.get("subject") || "MATHS";
+    const parentName = searchParams.get("parentName") || "";
+    const parentEmail = searchParams.get("parentEmail") || "";
+    const parentPhone = searchParams.get("parentPhone") || "";
+    const subjects =
+      subject === "BOTH" ? ["MATHS", "ENGLISH"] : subject === "ENGLISH" ? ["ENGLISH"] : ["MATHS"];
+
+    setForm((f) => ({
+      ...f,
+      firstName,
+      yearGroup,
+      subjects,
+      parentName,
+      parentEmail,
+      parentPhone,
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromTrial]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,8 +66,17 @@ export default function NewUserPage() {
         const data = await res.json();
         throw new Error(data.error || "Failed to create user");
       }
-      
-      router.push("/admin/users");
+
+      // If created from a trial booking, mark the trial as converted
+      if (fromTrial) {
+        fetch(`/api/trial/${fromTrial}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "CONVERTED" }),
+        }).catch(() => {}); // non-blocking
+      }
+
+      router.push(fromTrial ? "/admin/trials" : "/admin/users");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create user");
     } finally {
@@ -52,6 +90,13 @@ export default function NewUserPage() {
         <h1 className="text-2xl font-bold text-slate-900">Add New User</h1>
         <p className="text-slate-500">Create a new student, teacher, or admin</p>
       </div>
+
+      {fromTrial && (
+        <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
+          Creating an account from a trial booking. Details prefilled — set an email and password to
+          finish. The trial will be marked as converted on save.
+        </div>
+      )}
 
       <Card variant="bordered" className="p-6">
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -151,6 +196,37 @@ export default function NewUserPage() {
                   ))}
                 </div>
               </div>
+
+              <div className="border-t border-slate-200 pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Parent / guardian contact
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Used for weekly progress reports. Required for students.
+                </p>
+                <div className="mt-3 space-y-4">
+                  <Input
+                    label="Parent name"
+                    value={form.parentName}
+                    onChange={(e) => setForm({ ...form, parentName: e.target.value })}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      label="Parent email"
+                      type="email"
+                      value={form.parentEmail}
+                      onChange={(e) => setForm({ ...form, parentEmail: e.target.value })}
+                    />
+                    <Input
+                      label="Parent phone"
+                      type="tel"
+                      placeholder="07XXX XXXXXX"
+                      value={form.parentPhone}
+                      onChange={(e) => setForm({ ...form, parentPhone: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
             </>
           )}
 
@@ -165,6 +241,14 @@ export default function NewUserPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function NewUserPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-sm text-slate-500">Loading…</div>}>
+      <NewUserForm />
+    </Suspense>
   );
 }
 

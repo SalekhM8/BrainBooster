@@ -19,6 +19,9 @@ export default function RegisterPage() {
     confirmPassword: "",
     yearGroup: "GCSE",
     subjects: ["MATHS", "ENGLISH"],
+    parentName: "",
+    parentEmail: "",
+    parentPhone: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,6 +43,11 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!form.parentName.trim() || !form.parentEmail.trim() || !form.parentPhone.trim()) {
+      setError("Parent name, email and phone are required for progress reports");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -53,6 +61,9 @@ export default function RegisterPage() {
           password: form.password,
           yearGroup: form.yearGroup,
           subjects: form.subjects,
+          parentName: form.parentName,
+          parentEmail: form.parentEmail,
+          parentPhone: form.parentPhone,
         }),
       });
 
@@ -225,6 +236,40 @@ export default function RegisterPage() {
                       </span>
                     </label>
                   ))}
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 pt-3 sm:pt-4">
+                <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Parent / guardian details
+                </p>
+                <p className="mt-1 text-[11px] sm:text-xs text-slate-500">
+                  We send weekly progress reports here.
+                </p>
+
+                <div className="mt-3 space-y-3 sm:space-y-4">
+                  <Input
+                    label="Parent name"
+                    value={form.parentName}
+                    onChange={(e) => setForm({ ...form, parentName: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Parent email"
+                    type="email"
+                    placeholder="parent@example.com"
+                    value={form.parentEmail}
+                    onChange={(e) => setForm({ ...form, parentEmail: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Parent phone (WhatsApp)"
+                    type="tel"
+                    placeholder="07XXX XXXXXX"
+                    value={form.parentPhone}
+                    onChange={(e) => setForm({ ...form, parentPhone: e.target.value })}
+                    required
+                  />
                 </div>
               </div>
 

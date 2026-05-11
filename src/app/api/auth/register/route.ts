@@ -7,11 +7,28 @@ import { createNotification } from "@/lib/notifications";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, firstName, lastName, subjects, yearGroup } = body;
+    const {
+      email,
+      password,
+      firstName,
+      lastName,
+      subjects,
+      yearGroup,
+      parentName,
+      parentEmail,
+      parentPhone,
+    } = body;
 
     // Validation
     if (!email || !password || !firstName || !lastName) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    }
+
+    if (!parentName || !parentEmail || !parentPhone) {
+      return NextResponse.json(
+        { error: "Parent name, email and phone are required so we can send progress reports." },
+        { status: 400 }
+      );
     }
 
     if (password.length < 6) {
@@ -40,6 +57,9 @@ export async function POST(request: NextRequest) {
         role: "STUDENT",
         subjects: subjects ? JSON.stringify(subjects) : JSON.stringify(["MATHS", "ENGLISH"]),
         yearGroup: yearGroup || "GCSE",
+        parentName: parentName.trim(),
+        parentEmail: parentEmail.trim().toLowerCase(),
+        parentPhone: parentPhone.trim(),
         subscription: {
           create: {
             tier: "BASIC",

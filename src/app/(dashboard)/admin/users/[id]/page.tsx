@@ -30,6 +30,9 @@ interface User {
   isActive: boolean;
   subjects: string | null;
   yearGroup: string | null;
+  parentName: string | null;
+  parentEmail: string | null;
+  parentPhone: string | null;
   subscription: Subscription | null;
 }
 
@@ -53,6 +56,9 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
     yearGroup: "GCSE",
     subjects: [] as string[],
     password: "",
+    parentName: "",
+    parentEmail: "",
+    parentPhone: "",
     // Subscription fields
     tier: "BASIC",
     status: "ACTIVE",
@@ -73,6 +79,9 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
         yearGroup: user.yearGroup || "GCSE",
         subjects,
         password: "",
+        parentName: user.parentName || "",
+        parentEmail: user.parentEmail || "",
+        parentPhone: user.parentPhone || "",
         tier: user.subscription?.tier || "BASIC",
         status: user.subscription?.status || "ACTIVE",
         homeworkSiteAccess: user.subscription?.homeworkSiteAccess || false,
@@ -95,6 +104,9 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
         isActive: form.isActive,
         yearGroup: form.yearGroup,
         subjects: form.subjects,
+        parentName: form.parentName,
+        parentEmail: form.parentEmail,
+        parentPhone: form.parentPhone,
       };
 
       if (form.password) {
@@ -285,6 +297,44 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
           />
         </div>
       </Card>
+
+      {/* Parent contact (Students only) */}
+      {isStudent && (
+        <Card variant="bordered" className="p-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-1">Parent / guardian contact</h2>
+          <p className="mb-4 text-sm text-slate-500">
+            Used for weekly progress reports (email now, WhatsApp once Twilio is wired up).
+          </p>
+          <div className="space-y-4">
+            <Input
+              label="Parent name"
+              value={form.parentName}
+              onChange={(e) => setForm({ ...form, parentName: e.target.value })}
+            />
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Parent email"
+                type="email"
+                value={form.parentEmail}
+                onChange={(e) => setForm({ ...form, parentEmail: e.target.value })}
+              />
+              <Input
+                label="Parent phone"
+                type="tel"
+                placeholder="07XXX XXXXXX"
+                value={form.parentPhone}
+                onChange={(e) => setForm({ ...form, parentPhone: e.target.value })}
+              />
+            </div>
+            {(!form.parentEmail || !form.parentPhone) && (
+              <p className="text-xs text-amber-600">
+                Missing parent contact — this student will not receive automated reports until both
+                fields are filled in.
+              </p>
+            )}
+          </div>
+        </Card>
+      )}
 
       {/* Subscription (Students Only) */}
       {isStudent && user.subscription && (

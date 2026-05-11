@@ -41,6 +41,9 @@ export async function GET(request: NextRequest) {
           isActive: true,
           subjects: true,
           yearGroup: true,
+          parentName: true,
+          parentEmail: true,
+          parentPhone: true,
           createdAt: true,
           subscription: {
             select: {
@@ -83,7 +86,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, password, firstName, lastName, role, subjects, yearGroup } = body;
+    const {
+      email,
+      password,
+      firstName,
+      lastName,
+      role,
+      subjects,
+      yearGroup,
+      parentName,
+      parentEmail,
+      parentPhone,
+    } = body;
 
     // Check if user exists
     const existing = await db.user.findUnique({ where: { email: email.toLowerCase() } });
@@ -102,6 +116,9 @@ export async function POST(request: NextRequest) {
         role,
         subjects: subjects ? JSON.stringify(subjects) : null,
         yearGroup,
+        parentName: parentName?.trim() || null,
+        parentEmail: parentEmail?.trim().toLowerCase() || null,
+        parentPhone: parentPhone?.trim() || null,
         subscription: role === "STUDENT" ? {
           create: {
             tier: "BASIC",
