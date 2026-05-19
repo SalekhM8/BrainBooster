@@ -46,6 +46,11 @@ export const studentNavigation: NavSection[] = [
         href: "/dashboard/recordings",
         icon: PlayCircle,
       },
+      {
+        title: "Quizzes",
+        href: "/dashboard/quizzes",
+        icon: ClipboardList,
+      },
     ],
   },
   {
@@ -88,6 +93,11 @@ export const teacherNavigation: NavSection[] = [
         title: "Upcoming Sessions",
         href: "/teacher/sessions",
         icon: Video,
+      },
+      {
+        title: "Quizzes",
+        href: "/teacher/quizzes",
+        icon: ClipboardList,
       },
     ],
   },

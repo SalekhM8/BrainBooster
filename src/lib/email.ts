@@ -1,23 +1,51 @@
-// Email service - currently logs to console
-// Replace with actual email provider (SendGrid, Resend, etc.) in production
+// Email service - uses Resend if RESEND_API_KEY is configured, otherwise logs to console.
+import { Resend } from "resend";
 
 interface EmailOptions {
-  to: string;
+  to: string | string[];
   subject: string;
   html: string;
+  replyTo?: string;
 }
 
-export async function sendEmail({ to, subject, html }: EmailOptions): Promise<boolean> {
-  // In production, replace this with actual email sending
-  // For now, log to console for testing
-  console.log("\n========== EMAIL ===========");
-  console.log(`To: ${to}`);
-  console.log(`Subject: ${subject}`);
-  console.log(`Body: ${html}`);
-  console.log("============================\n");
-  
-  // Simulate success
-  return true;
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "BrainBooster <onboarding@resend.dev>";
+
+let resendClient: Resend | null = null;
+function getResend(): Resend | null {
+  if (!process.env.RESEND_API_KEY) return null;
+  if (!resendClient) resendClient = new Resend(process.env.RESEND_API_KEY);
+  return resendClient;
+}
+
+export async function sendEmail({ to, subject, html, replyTo }: EmailOptions): Promise<boolean> {
+  const client = getResend();
+
+  if (!client) {
+    console.log("\n========== EMAIL (dev, no RESEND_API_KEY) ===========");
+    console.log(`To: ${Array.isArray(to) ? to.join(", ") : to}`);
+    console.log(`Subject: ${subject}`);
+    console.log(`Body: ${html.slice(0, 400)}${html.length > 400 ? "…" : ""}`);
+    console.log("======================================================\n");
+    return true;
+  }
+
+  try {
+    const { error } = await client.emails.send({
+      from: FROM_EMAIL,
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html,
+      ...(replyTo ? { replyTo } : {}),
+    });
+    if (error) {
+      console.error("[email] Resend error:", error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("[email] Send threw:", err);
+    return false;
+  }
 }
 
 export function generatePasswordResetEmail(resetUrl: string, firstName: string): string {

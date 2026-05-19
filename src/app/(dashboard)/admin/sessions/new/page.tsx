@@ -29,7 +29,10 @@ export default function NewSessionPage() {
     duration: "60",
     meetingLink: "",
     teacherId: "",
+    topicsTaught: "",
+    generateQuiz: true,
   });
+  const [quizStatus, setQuizStatus] = useState<string>("");
 
   useEffect(() => {
     fetch("/api/users?role=TEACHER")
@@ -58,14 +61,36 @@ export default function NewSessionPage() {
       });
 
       if (!res.ok) throw new Error("Failed to create session");
-      
+      const created = await res.json();
+
+      // If admin opted in to auto-generate, kick off Claude generation now
+      // so the teacher can review/approve before the lesson.
+      if (form.generateQuiz && form.topicsTaught.trim()) {
+        setQuizStatus("Generating quiz with Claude…");
+        try {
+          const genRes = await fetch("/api/quizzes/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sessionId: created.id }),
+          });
+          if (!genRes.ok) {
+            const errBody = await genRes.json().catch(() => ({}));
+            setQuizStatus(`Session saved, but quiz generation failed: ${errBody.error || genRes.statusText}`);
+          } else {
+            setQuizStatus("Quiz draft created. Teacher will review before the session.");
+          }
+        } catch {
+          setQuizStatus("Session saved, but quiz generation failed (network).");
+        }
+      }
+
       // Invalidate all session caches to force refresh on sessions list
       await mutate(
         (key) => typeof key === "string" && key.startsWith("/api/sessions"),
         undefined,
         { revalidate: true }
       );
-      
+
       router.push("/admin/sessions");
     } catch {
       setError("Failed to create session");
@@ -177,6 +202,46 @@ export default function NewSessionPage() {
             onChange={(e) => setForm({ ...form, meetingLink: e.target.value })}
             placeholder="https://zoom.us/j/..."
           />
+
+          <div className="rounded-lg border border-indigo-100 bg-indigo-50/40 p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Post-lesson AI quiz</p>
+                <p className="text-xs text-slate-600">
+                  Claude drafts a multiple-choice quiz from the topics below. Teacher reviews
+                  before the session, then it auto-publishes to students after the session ends.
+                </p>
+              </div>
+              <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={form.generateQuiz}
+                  onChange={(e) => setForm({ ...form, generateQuiz: e.target.checked })}
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                Auto-generate
+              </label>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Topics planned for this session
+              </label>
+              <textarea
+                value={form.topicsTaught}
+                onChange={(e) => setForm({ ...form, topicsTaught: e.target.value })}
+                placeholder="e.g. Solving quadratic equations by factoring, completing the square, and the quadratic formula. Worked examples with negative coefficients."
+                rows={3}
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+                disabled={!form.generateQuiz}
+              />
+              <p className="mt-1 text-xs text-slate-500">
+                Be specific — these notes are the only thing Claude sees when writing questions.
+              </p>
+            </div>
+            {quizStatus && (
+              <p className="text-xs font-medium text-indigo-700">{quizStatus}</p>
+            )}
+          </div>
 
           <div className="flex gap-3 pt-4">
             <Button type="submit" isLoading={loading}>

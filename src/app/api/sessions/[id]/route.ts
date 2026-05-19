@@ -60,6 +60,8 @@ export async function PUT(
       teacherId,
       isLive,
       isCancelled,
+      topicsTaught,
+      generateQuiz,
     } = body;
 
     const updateData: Record<string, unknown> = {};
@@ -75,6 +77,8 @@ export async function PUT(
     if (teacherId !== undefined) updateData.teacherId = teacherId;
     if (isLive !== undefined) updateData.isLive = isLive;
     if (isCancelled !== undefined) updateData.isCancelled = isCancelled;
+    if (topicsTaught !== undefined) updateData.topicsTaught = topicsTaught?.trim() || null;
+    if (generateQuiz !== undefined) updateData.generateQuiz = Boolean(generateQuiz);
 
     const sessionData = await db.session.update({
       where: { id },

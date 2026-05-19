@@ -94,7 +94,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, subject, yearGroup, scheduledAt, duration, meetingLink, teacherId } = body;
+    const {
+      title,
+      description,
+      subject,
+      yearGroup,
+      scheduledAt,
+      duration,
+      meetingLink,
+      teacherId,
+      topicsTaught,
+      generateQuiz,
+    } = body;
 
     const newSession = await db.session.create({
       data: {
@@ -106,6 +117,8 @@ export async function POST(request: NextRequest) {
         duration: duration || 60,
         meetingLink,
         teacherId,
+        topicsTaught: topicsTaught?.trim() || null,
+        generateQuiz: Boolean(generateQuiz),
       },
       include: {
         teacher: {
